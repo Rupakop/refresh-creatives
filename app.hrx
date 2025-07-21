@@ -10,6 +10,14 @@ function App() {
       .catch((err) => console.error("Error:", err));
   }, []);
 
+  const handleAddToCart = (product) => {
+    alert(`✅ ${product.name} added to cart!`);
+  };
+
+  const handleBuyNow = (product) => {
+    alert(`🛒 Redirecting to checkout for ${product.name}...`);
+  };
+
   return (
     <div style={{ padding: "20px", backgroundColor: "#fce4ec", minHeight: "100vh" }}>
       <h1 style={{ textAlign: "center", fontSize: "2rem", color: "#880e4f" }}>
@@ -24,7 +32,7 @@ function App() {
               margin: "15px",
               padding: "10px",
               borderRadius: "10px",
-              width: "200px",
+              width: "220px",
               boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
               textAlign: "center",
             }}
@@ -32,10 +40,41 @@ function App() {
             <img
               src={product.image}
               alt={product.name}
-              style={{ width: "100%", height: "200px", objectFit: "cover" }}
+              style={{ width: "100%", height: "200px", objectFit: "cover", borderRadius: "10px" }}
             />
-            <h2>{product.name}</h2>
-            <p>₹{product.price}</p>
+            <h2 style={{ fontSize: "1.2rem", margin: "10px 0" }}>{product.name}</h2>
+            <p style={{ fontWeight: "bold", color: "#333" }}>₹{product.price}</p>
+
+            <button
+              onClick={() => handleAddToCart(product)}
+              style={{
+                backgroundColor: "#d81b60",
+                color: "white",
+                border: "none",
+                padding: "8px 12px",
+                marginTop: "8px",
+                borderRadius: "6px",
+                cursor: "pointer",
+                marginRight: "5px",
+              }}
+            >
+              Add to Cart
+            </button>
+
+            <button
+              onClick={() => handleBuyNow(product)}
+              style={{
+                backgroundColor: "#4a148c",
+                color: "white",
+                border: "none",
+                padding: "8px 12px",
+                marginTop: "8px",
+                borderRadius: "6px",
+                cursor: "pointer",
+              }}
+            >
+              Buy Now
+            </button>
           </div>
         ))}
       </div>
