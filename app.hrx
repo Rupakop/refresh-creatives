@@ -1,0 +1,46 @@
+import { useEffect, useState } from "react";
+
+function App() {
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    fetch("https://refresh-creatives-backend.onrender.com/api/products")
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch((err) => console.error("Error:", err));
+  }, []);
+
+  return (
+    <div style={{ padding: "20px", backgroundColor: "#fce4ec", minHeight: "100vh" }}>
+      <h1 style={{ textAlign: "center", fontSize: "2rem", color: "#880e4f" }}>
+        Refresh Creatives
+      </h1>
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
+        {products.map((product) => (
+          <div
+            key={product.id}
+            style={{
+              backgroundColor: "#fff",
+              margin: "15px",
+              padding: "10px",
+              borderRadius: "10px",
+              width: "200px",
+              boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+              textAlign: "center",
+            }}
+          >
+            <img
+              src={product.image}
+              alt={product.name}
+              style={{ width: "100%", height: "200px", objectFit: "cover" }}
+            />
+            <h2>{product.name}</h2>
+            <p>₹{product.price}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default App;
