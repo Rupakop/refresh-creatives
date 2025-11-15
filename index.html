@@ -53,7 +53,7 @@
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {products.map(product => (
               <div key={product.id} className="bg-white text-black rounded-2xl shadow-lg p-4">
-                <img src={product.image} alt={product.name} className="w-full h-60 object-cover rounded-xl mb-4" />
+                <img src={product.image} alt={product.name} className="w-full h-80 object-cover rounded-xl mb-4" />
                 <h2 className="text-xl font-semibold">{product.name}</h2>
                 <p className="text-sm text-gray-700">₹{product.price}</p>
               </div>
