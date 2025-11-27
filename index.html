@@ -2,9 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Refresh Elixer</title>
+
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- React -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -14,7 +18,6 @@
   <div id="root" class="w-full"></div>
 
   <script type="text/babel">
-
     const products = [
       {
         id: 1,
@@ -48,91 +51,55 @@
       }
     ];
 
+    // ✅ Your correct WhatsApp number (India country code + your number)
+    const PHONE_NUMBER = "917977085466";
+
+    function getWhatsAppLink(product) {
+      const message = `I want to order ${product.name} (₹${product.price}) from Refresh Elixer.`;
+      return `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
+    }
+
     function App() {
-
-      // Step 2: Modal state
-      const [showModal, setShowModal] = React.useState(false);
-      const [selectedProduct, setSelectedProduct] = React.useState(null);
-
-      function openModal(product) {
-        setSelectedProduct(product);
-        setShowModal(true);
-      }
-
       return (
         <div className="py-10 text-center w-full">
-          <h1 className="text-4xl font-bold text-white-300 mb-10">Refresh Elixer</h1>
+          <h1 className="text-4xl font-bold mb-2">Refresh Elixer</h1>
+          <p className="text-sm text-gray-200 mb-10">
+            Premium perfume collection – order directly on WhatsApp
+          </p>
 
-          {/* GRID */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {products.map(product => (
-              <div key={product.id} className="bg-white text-black rounded-2xl shadow-lg p-4">
-               
-                <img src={product.image} alt={product.name} className="w-full h-100 object-cover rounded-xl mb-4" />
-               
-                <h2 className="text-xl font-semibold">{product.name}</h2>
-                <p className="text-sm text-gray-700 mb-2">₹{product.price}</p>
+            {products.map((product) => (
+              <div
+                key={product.id}
+                className="bg-white text-black rounded-2xl shadow-lg p-4 flex flex-col"
+              >
+                <div className="w-full mb-4">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-48 object-contain rounded-xl"
+                  />
+                </div>
 
-                {/* Step 1: Add Buttons */}
-                <button 
-                  onClick={() => openModal(product)} 
-                  className="bg-pink-600 text-white w-full py-2 rounded-lg mb-2"
+                <h2 className="text-lg font-semibold mb-1">{product.name}</h2>
+                <p className="text-sm text-gray-700 mb-4">₹{product.price}</p>
+
+                <a
+                  href={getWhatsAppLink(product)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-pink-600 hover:bg-pink-700 text-white w-full py-2 rounded-lg text-sm font-medium mt-auto transition"
                 >
-                  Buy Now
-                </button>
-
-                <button 
-                  onClick={() => openModal(product)} 
-                  className="bg-black text-white w-full py-2 rounded-lg"
-                >
-                  Add to Cart
-                </button>
-
+                  Order on WhatsApp
+                </a>
               </div>
             ))}
           </div>
-
-          {/* Step 3: MODAL */}
-          {showModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
-              <div className="bg-white text-black p-6 rounded-2xl w-full max-w-md">
-
-                <h2 className="text-2xl font-bold mb-4">Select Perfume</h2>
-
-                {products.map(item => (
-                  <div 
-                    key={item.id} 
-                    className="border p-3 mb-2 rounded-lg flex justify-between items-center"
-                  >
-                    <span>{item.name} - ₹{item.price}</span>
-
-                    <a 
-                      href={`https://wa.me/7977085466?text=I want to order ${item.name}`}
-                      className="bg-green-600 text-white px-3 py-1 rounded-lg"
-                      target="_blank"
-                    >
-                      Order
-                    </a>
-                  </div>
-                ))}
-
-                <button 
-                  onClick={() => setShowModal(false)} 
-                  className="bg-gray-700 text-white w-full py-2 rounded-lg mt-4"
-                >
-                  Close
-                </button>
-
-              </div>
-            </div>
-          )}
-
         </div>
       );
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
   </script>
 </body>
 </html>
