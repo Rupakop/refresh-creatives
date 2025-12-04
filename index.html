@@ -1,105 +1,396 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Refresh Elixer</title>
-
-  <!-- Tailwind CSS -->
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Refresh Elixer — Select Perfumes</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- React -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
+<body class="bg-gradient-to-r from-black to-pink-600 text-white min-h-screen">
 
-<body class="bg-gradient-to-r from-black to-pink-600 text-white min-h-screen flex items-center justify-center px-4">
-  <div id="root" class="w-full"></div>
+  <div class="max-w-6xl mx-auto py-12 px-4">
+    <header class="text-center mb-8">
+      <h1 class="text-4xl font-bold">Refresh Elixer</h1>
+      <p class="text-gray-200 mt-2">Choose fragrances — add to cart — send order on WhatsApp</p>
+    </header>
 
-  <script type="text/babel">
-    const products = [
-      {
-        id: 1,
-        name: '10 ml bottle',
-        image: 'images/SaveGram.App_566550326_17857770177537302_8578694020916593195_n-removebg-preview.png',
-        price: 99
-      },
-      {
-        id: 2,
-        name: '20 ml bottle',
-        image: 'images/19591-removebg-preview.png',
-        price: 199
-      },
-      {
-        id: 3,
-        name: '30 ml bottle ',
-        image: 'images/generated-image__35_-removebg-preview.png',
-        price: 320
-      },
-      {
-        id: 4,
-        name: '60 ml bottle',
-        image: 'images/generated-image__34_-removebg-preview.png',
-        price: 499
-      },
-      {
-        id: 5,
-        name: '100 ml bottle',
-        image: 'images/generated-image__36_-removebg-preview.png',
-        price: 749
-      }
-    ];
+    <div class="flex justify-center gap-3 mb-6">
+      <a id="waMain" href="https://wa.me/917977085466" target="_blank" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded">Chat on WhatsApp</a>
+      <button id="openSelectorBtn" class="bg-pink-600 hover:bg-pink-700 px-4 py-2 rounded">Select Perfumes</button>
+    </div>
 
-    // ✅ Your correct WhatsApp number (India country code + your number)
-    const PHONE_NUMBER = "917977085466";
+    <!-- Preview grid (bottle sizes as product cards) -->
+    <div id="previewGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+      <!-- Cards injected by JS -->
+    </div>
 
-    function getWhatsAppLink(product) {
-      const message = `I want to order ${product.name} (₹${product.price}) from Refresh Elixer.`;
-      return `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
-    }
+    <footer class="text-center text-sm text-gray-200">No payments — selection & WhatsApp ordering only.</footer>
+  </div>
 
-    function App() {
-      return (
-        <div className="py-10 text-center w-full">
-          <h1 className="text-4xl font-bold mb-2">Refresh Elixer</h1>
-          <p className="text-sm text-gray-200 mb-10">
-            Premium perfume collection – order directly on WhatsApp
-          </p>
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 hidden z-50 flex items-start justify-center overflow-auto bg-black/70 p-4">
+    <div class="bg-white text-black rounded-xl max-w-4xl w-full p-4 mt-8">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-xl font-semibold">Select Perfumes</h2>
+        <div class="flex items-center gap-3">
+          <span id="stepIndicator" class="text-sm text-gray-600">Step: Selection</span>
+          <button id="closeModal" class="text-sm text-gray-600">Close</button>
+        </div>
+      </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="bg-white text-black rounded-2xl shadow-lg p-4 flex flex-col"
-              >
-                <div className="w-full mb-4">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-48 object-contain rounded-xl"
-                  />
-                </div>
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <!-- Left: list -->
+        <div>
+          <div class="mb-2">
+            <label class="text-sm">Default bottle size:</label>
+            <select id="defaultSize" class="border rounded px-2 py-1 ml-2 text-sm">
+              <option value="10">10 ml — ₹99</option>
+              <option value="20">20 ml — ₹199</option>
+              <option value="30" selected>30 ml — ₹320</option>
+              <option value="60">60 ml — ₹499</option>
+              <option value="100">100 ml — ₹749</option>
+            </select>
+          </div>
 
-                <h2 className="text-lg font-semibold mb-1">{product.name}</h2>
-                <p className="text-sm text-gray-700 mb-4">₹{product.price}</p>
-
-                <a
-                  href={getWhatsAppLink(product)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-pink-600 hover:bg-pink-700 text-white w-full py-2 rounded-lg text-sm font-medium mt-auto transition"
-                >
-                  Order on WhatsApp
-                </a>
-              </div>
-            ))}
+          <div id="perfumeList" class="max-h-[50vh] overflow-auto space-y-2 p-1 border rounded pr-2">
+            <!-- Perfume items injected by JS -->
           </div>
         </div>
-      );
-    }
 
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
+        <!-- Right: cart + address -->
+        <div class="space-y-3">
+          <div class="p-3 border rounded bg-gray-50 text-black">
+            <h3 class="font-semibold">Cart</h3>
+            <div id="cartItems" class="mt-2 space-y-2"></div>
+            <div class="mt-3 flex items-center justify-between">
+              <div class="font-semibold">Total: ₹<span id="cartTotal">0</span></div>
+              <button id="clearCart" class="text-sm px-3 py-1 border rounded">Clear</button>
+            </div>
+          </div>
+
+          <div class="p-3 border rounded bg-gray-50 text-black">
+            <h3 class="font-semibold">Delivery Details</h3>
+            <div class="mt-2 space-y-2">
+              <input id="custName" placeholder="Full name" class="w-full border px-2 py-1 rounded text-sm" />
+              <input id="custPhone" placeholder="Phone (include country code if outside India)" class="w-full border px-2 py-1 rounded text-sm" />
+              <input id="addrLine" placeholder="Address line (street, house no.)" class="w-full border px-2 py-1 rounded text-sm" />
+              <input id="addrLocality" placeholder="Locality (eg. Parel, Lalbaug)" class="w-full border px-2 py-1 rounded text-sm" />
+              <input id="addrCity" placeholder="City" class="w-full border px-2 py-1 rounded text-sm" />
+              <div class="text-xs text-gray-600">COD available only for: Parel, Lalbaug, Sewri, Wadala, Dadar</div>
+            </div>
+          </div>
+
+          <div class="flex gap-2">
+            <button id="sendWhatsApp" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded">Send Order on WhatsApp</button>
+            <button id="closeModal2" class="flex-1 bg-gray-300 text-black py-2 rounded">Close</button>
+          </div>
+
+          <div id="msg" class="text-sm text-red-600"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+/* ---------- DATA: 35 perfumes with safe names, inspired lines & descriptions ---------- */
+const PERFUMES = [
+  { id:1, name:"Velvet Verse", inspired:"Poem", desc:"Warm floral blend with soft powdery notes and a romantic aura."},
+  { id:2, name:"Pure Snow Musk", inspired:"White Musk", desc:"Clean, soft, airy musk with long-lasting freshness."},
+  { id:3, name:"Midnight Dreamer", inspired:"Dream", desc:"Smooth and lightly sweet with a calm, dreamy aura."},
+  { id:4, name:"Soft Dove Mist", inspired:"Dove", desc:"Fresh, clean, creamy fragrance with a comforting soap-like touch."},
+  { id:5, name:"Golden Talon", inspired:"Golden Hawk", desc:"Sharp citrus opening with masculine woody depth."},
+  { id:6, name:"Midnight Charlie", inspired:"Charlie Black", desc:"Warm spicy masculine scent with aromatic undertones."},
+  { id:7, name:"Rider’s Edge", inspired:"Harley Davidson", desc:"Rugged leathery aroma with smoky, adventurous vibes."},
+  { id:8, name:"Crystal Musk", inspired:"White Jovan Musk", desc:"Fresh musky aroma with a lightly floral clean finish."},
+  { id:9, name:"Open Breeze", inspired:"Open", desc:"Herbal green freshness with a cool aromatic finish."},
+  { id:10, name:"Brute Force", inspired:"Brut", desc:"Classic barbershop fougère with spice and musk."},
+  { id:11, name:"Snow Nevia", inspired:"Nevia", desc:"Fresh, creamy, soft fragrance with a soothing feel."},
+  { id:12, name:"Royal Mirage Essence", inspired:"Royal Mirage", desc:"Powdery, floral, elegant, and long-lasting scent."},
+  { id:13, name:"Solo Legend", inspired:"One Man Show", desc:"Strong woody-aromatic with herbal sharpness."},
+  { id:14, name:"Havoc Storm", inspired:"Havoc", desc:"Mild sweet freshness with a youthful energetic vibe."},
+  { id:15, name:"Urban Hugo", inspired:"Hugo", desc:"Green, fresh, slightly spicy masculine scent."},
+  { id:16, name:"Sweet Aura", inspired:"Sweet Heart", desc:"Soft floral sweetness balanced with musk."},
+  { id:17, name:"Mars Fire", inspired:"Mars", desc:"Spicy, warm, bold scent with strong projection."},
+  { id:18, name:"Cobra Strike", inspired:"Cobra", desc:"Sharp, spicy masculine scent with a punch."},
+  { id:19, name:"Inferno Wood", inspired:"Fahrenheit", desc:"Smoky leather blended with violet leaf & warm spice."},
+  { id:20, name:"Ocean Attar Mist", inspired:"Sea Seven Attarful", desc:"Fresh aquatic scent with crisp salty waves."},
+  { id:21, name:"Azure Seven", inspired:"Sea Seven", desc:"Pure oceanic freshness with an airy cool finish."},
+  { id:22, name:"Fresh Ponds Mist", inspired:"Ponds", desc:"Clean, powdery, creamy freshness."},
+  { id:23, name:"Blue Velvet Lady", inspired:"Blue Lady", desc:"Floral-fruity feminine scent with soft sweetness."},
+  { id:24, name:"Paso Legend", inspired:"El Paso", desc:"Woody spicy masculine fragrance with warm depth."},
+  { id:25, name:"Kewda Bloom", inspired:"Kevda", desc:"Traditional fresh sweet floral attar."},
+  { id:26, name:"Bold Belle", inspired:"Good Girl", desc:"Sweet, sensual floral with warm tonka & cocoa."},
+  { id:27, name:"Nice Breeze", inspired:"Nice", desc:"Simple fresh floral-aquatic with soft pleasant notes."},
+  { id:28, name:"Lomani Noir", inspired:"Lomani", desc:"Aromatic woody blend with citrus freshness."},
+  { id:29, name:"Night Drakkar", inspired:"Drakkar Noir", desc:"Herbal spicy masculine fougère."},
+  { id:30, name:"Aqua Wave", inspired:"Cool Water", desc:"Fresh oceanic notes with mint & lavender."},
+  { id:31, name:"Scarlet Charlie", inspired:"Charlie Red", desc:"Warm floral sweetness with spicy feminine tones."},
+  { id:32, name:"Sport Breeze", inspired:"Polo Sport", desc:"Clean sporty citrus with green notes."},
+  { id:33, name:"Blue Charge", inspired:"Blue Challenge", desc:"Fresh blue aromatic masculine scent."},
+  { id:34, name:"London Snow", inspired:"White London", desc:"Bright citrusy fragrance with soft musk."},
+  { id:35, name:"Ocean Drift", inspired:"Cool Water", desc:"Minty aquatic freshness with a calm coastal vibe."}
+];
+
+/* ---------- bottle sizes ---------- */
+const SIZES = [
+  { code:10, label:"10 ml", price:99 },
+  { code:20, label:"20 ml", price:199 },
+  { code:30, label:"30 ml", price:320 },
+  { code:60, label:"60 ml", price:499 },
+  { code:100,label:"100 ml",price:749 }
+];
+
+/* ---------- state ---------- */
+let cart = []; // items: {perfumeId, sizeCode, qty}
+
+/* ---------- helpers ---------- */
+function findPerfume(id){ return PERFUMES.find(p => p.id === id); }
+function findSize(code){ return SIZES.find(s => s.code === code) || SIZES[2]; }
+function calcTotal(){ return cart.reduce((sum, it) => sum + (findSize(it.sizeCode).price * it.qty), 0); }
+function formatRupees(n){ return Number(n).toLocaleString('en-IN'); }
+
+/* ---------- render preview grid (bottle size cards) ---------- */
+const previewGrid = document.getElementById('previewGrid');
+SIZES.forEach(size => {
+  const card = document.createElement('div');
+  card.className = 'bg-white text-black rounded-2xl p-4 flex flex-col';
+  card.innerHTML = `
+    <div class="h-40 mb-3 flex items-center justify-center bg-gray-100 rounded-xl">
+      <span class="text-xs text-gray-500">Bottle</span>
+    </div>
+    <h3 class="text-lg font-semibold">${size.label} bottle</h3>
+    <div class="text-sm text-gray-700">₹${size.price}</div>
+    <div class="flex gap-2 mt-auto pt-3">
+      <button data-size="${size.code}" class="wa-order bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded-lg text-sm font-medium flex-1">Order on WhatsApp</button>
+      <button data-size="${size.code}" class="open-modal buy-now bg-pink-600 hover:bg-pink-700 text-white py-2 px-3 rounded-lg text-sm font-medium">Select</button>
+    </div>
+  `;
+  previewGrid.appendChild(card);
+});
+
+/* ---------- build perfume list in modal ---------- */
+const perfumeListEl = document.getElementById('perfumeList');
+PERFUMES.forEach(p => {
+  const item = document.createElement('div');
+  item.className = 'p-3 border rounded-lg bg-white/80 text-black';
+  item.innerHTML = `
+    <div class="flex items-start gap-3">
+      <input type="checkbox" data-id="${p.id}" class="perf-checkbox mt-1" />
+      <div>
+        <div class="font-semibold">${p.name}</div>
+        <div class="text-xs text-gray-600">Inspired by ${p.inspired}</div>
+        <div class="text-xs text-gray-700 mt-1">${p.desc}</div>
+        <div class="mt-2 flex items-center gap-2">
+          <label class="text-xs">Size</label>
+          <select data-id="${p.id}" class="size-select border px-2 py-1 text-xs rounded">
+            ${SIZES.map(s => `<option value="${s.code}" ${s.code===30?'selected':''}>${s.label} — ₹${s.price}</option>`).join('')}
+          </select>
+          <label class="text-xs ml-2">Qty</label>
+          <input data-id="${p.id}" type="number" min="1" value="1" class="qty-input w-14 border px-2 py-1 text-xs rounded" />
+        </div>
+      </div>
+    </div>
+  `;
+  perfumeListEl.appendChild(item);
+});
+
+/* ---------- DOM refs ---------- */
+const openSelectorBtn = document.getElementById('openSelectorBtn');
+const modal = document.getElementById('modal');
+const closeModalBtn = document.getElementById('closeModal');
+const closeModalBtn2 = document.getElementById('closeModal2') || document.getElementById('closeModal');
+const defaultSizeEl = document.getElementById('defaultSize');
+const cartItemsEl = document.getElementById('cartItems');
+const cartTotalEl = document.getElementById('cartTotal');
+const clearCartBtn = document.getElementById('clearCart');
+const sendWhatsAppBtn = document.getElementById('sendWhatsApp');
+const waMain = document.getElementById('waMain');
+const msgEl = document.getElementById('msg');
+
+/* ---------- event wiring ---------- */
+openSelectorBtn.addEventListener('click', () => { openModal(); });
+document.querySelectorAll('.open-modal').forEach(b => b.addEventListener('click', () => openModal()));
+
+closeModalBtn.addEventListener('click', closeModal);
+if (closeModalBtn2) closeModalBtn2.addEventListener('click', closeModal);
+
+clearCartBtn.addEventListener('click', () => { cart = []; updateCartUI(); });
+
+/* WhatsApp quick order from top cards: open modal and preselect nothing (user chooses) */
+document.querySelectorAll('.wa-order').forEach(btn => {
+  btn.addEventListener('click', () => {
+    openModal();
+  });
+});
+
+/* checkbox interactions */
+function attachPerfumeControls(){
+  document.querySelectorAll('.perf-checkbox').forEach(chk => {
+    chk.addEventListener('change', () => {
+      const id = Number(chk.dataset.id);
+      const sizeSel = document.querySelector(`.size-select[data-id="${id}"]`);
+      const qtyInput = document.querySelector(`.qty-input[data-id="${id}"]`);
+      if (chk.checked) {
+        const sizeCode = Number(sizeSel.value);
+        const qty = Math.max(1, Number(qtyInput.value) || 1);
+        cart.push({ perfumeId: id, sizeCode, qty });
+      } else {
+        cart = cart.filter(i => i.perfumeId !== id);
+      }
+      updateCartUI();
+    });
+  });
+
+  // size change & qty change update existing cart item if present
+  document.querySelectorAll('.size-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const id = Number(sel.dataset.id);
+      const item = cart.find(i => i.perfumeId === id);
+      if (item) { item.sizeCode = Number(sel.value); updateCartUI(); }
+    });
+  });
+  document.querySelectorAll('.qty-input').forEach(inp => {
+    inp.addEventListener('change', () => {
+      const id = Number(inp.dataset.id);
+      const item = cart.find(i => i.perfumeId === id);
+      const v = Math.max(1, Number(inp.value) || 1);
+      if (item) { item.qty = v; updateCartUI(); }
+    });
+  });
+}
+
+/* update cart UI */
+function updateCartUI(){
+  cartItemsEl.innerHTML = '';
+  if (cart.length === 0) {
+    cartItemsEl.innerHTML = '<div class="text-sm text-gray-600">Cart is empty</div>';
+    cartTotalEl.textContent = '0';
+    return;
+  }
+  cart.forEach((it, idx) => {
+    const p = findPerfume(it.perfumeId);
+    const s = findSize(it.sizeCode);
+    const row = document.createElement('div');
+    row.className = 'flex items-start justify-between gap-3';
+    row.innerHTML = `
+      <div class="flex-1">
+        <div class="font-medium">${p.name} <span class="text-xs text-gray-600">(${s.label})</span></div>
+        <div class="text-xs text-gray-600">${p.desc}</div>
+        <div class="mt-1 text-xs">Qty: ${it.qty}</div>
+      </div>
+      <div class="text-right">
+        <div class="font-medium">₹${formatRupees(s.price * it.qty)}</div>
+        <div class="mt-2 flex gap-1 justify-end">
+          <button data-idx="${idx}" class="dec text-xs px-2 py-1 border rounded">-</button>
+          <button data-idx="${idx}" class="inc text-xs px-2 py-1 border rounded">+</button>
+          <button data-idx="${idx}" class="rem text-xs px-2 py-1 text-red-600">Remove</button>
+        </div>
+      </div>
+    `;
+    cartItemsEl.appendChild(row);
+  });
+
+  // attach inc/dec/remove
+  cartItemsEl.querySelectorAll('.inc').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = Number(btn.dataset.idx); cart[i].qty++; syncInputs(cart[i]); updateCartUI();
+    });
+  });
+  cartItemsEl.querySelectorAll('.dec').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = Number(btn.dataset.idx); cart[i].qty = Math.max(1, cart[i].qty - 1); syncInputs(cart[i]); updateCartUI();
+    });
+  });
+  cartItemsEl.querySelectorAll('.rem').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = Number(btn.dataset.idx);
+      const removed = cart.splice(i,1)[0];
+      // uncheck corresponding checkbox
+      const cb = document.querySelector(`.perf-checkbox[data-id="${removed.perfumeId}"]`);
+      if (cb) cb.checked = false;
+      updateCartUI();
+    });
+  });
+
+  cartTotalEl.textContent = formatRupees(calcTotal());
+}
+
+/* sync changes back to inputs (size & qty) */
+function syncInputs(item){
+  const sizeSel = document.querySelector(`.size-select[data-id="${item.perfumeId}"]`);
+  const qtyInput = document.querySelector(`.qty-input[data-id="${item.perfumeId}"]`);
+  if (sizeSel) sizeSel.value = item.sizeCode;
+  if (qtyInput) qtyInput.value = item.qty;
+}
+
+/* open/close modal */
+function openModal(){
+  modal.classList.remove('hidden');
+  msgEl.textContent = '';
+  attachPerfumeControls();
+  // reflect any existing cart to checkboxes/inputs
+  cart.forEach(it => {
+    const cb = document.querySelector(`.perf-checkbox[data-id="${it.perfumeId}"]`);
+    if (cb) cb.checked = true;
+    syncInputs(it);
+  });
+  updateCartUI();
+}
+function closeModal(){
+  modal.classList.add('hidden');
+}
+
+/* send order on WhatsApp */
+sendWhatsAppBtn.addEventListener('click', () => {
+  msgEl.textContent = '';
+  if (cart.length === 0) { msgEl.textContent = 'Please select at least one perfume.'; return; }
+  const name = document.getElementById('custName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  const line = document.getElementById('addrLine').value.trim();
+  const locality = document.getElementById('addrLocality').value.trim();
+  const city = document.getElementById('addrCity').value.trim();
+  if (!name || !phone || (!line && !locality)) { msgEl.textContent = 'Please fill name, phone and address (line or locality).'; return; }
+
+  // Build message
+  let message = `Order from Refresh Elixer%0A%0A`;
+  message += `Customer: ${encodeURIComponent(name)}%0A`;
+  message += `Phone: ${encodeURIComponent(phone)}%0A`;
+  message += `Address: ${encodeURIComponent(line || '')} ${encodeURIComponent(locality || '')} ${encodeURIComponent(city || '')}%0A%0A`;
+  message += `Items:%0A`;
+  cart.forEach(it => {
+    const p = findPerfume(it.perfumeId);
+    const s = findSize(it.sizeCode);
+    message += `• ${encodeURIComponent(p.name)} (Inspired by ${encodeURIComponent(p.inspired)}) — ${s.label} x${it.qty} — ₹${s.price * it.qty}%0A`;
+  });
+  message += `%0ATotal: ₹${calcTotal()}%0A`;
+  message += `%0ANotes: Please confirm availability and delivery time.`;
+
+  // WhatsApp number (India). Replace with your number if different.
+  const PHONE_NUMBER = '917977085466';
+  const waLink = `https://wa.me/${PHONE_NUMBER}?text=${message}`;
+
+  // open WhatsApp in new tab
+  window.open(waLink, '_blank');
+});
+
+/* ensure checkboxes remain responsive when user changes size/qty before adding */
+document.addEventListener('change', (e) => {
+  if (e.target.matches('.size-select') || e.target.matches('.qty-input')) {
+    const id = Number(e.target.dataset.id);
+    const inCart = cart.find(i => i.perfumeId === id);
+    if (inCart) {
+      inCart.sizeCode = Number(document.querySelector(`.size-select[data-id="${id}"]`).value);
+      inCart.qty = Math.max(1, Number(document.querySelector(`.qty-input[data-id="${id}"]`).value) || 1);
+      updateCartUI();
+    }
+  }
+});
+
+/* initialize empty cart UI */
+updateCartUI();
+
+</script>
 </body>
 </html>
+
