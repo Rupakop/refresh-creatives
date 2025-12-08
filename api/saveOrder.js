@@ -1,37 +1,32 @@
-// /api/checkOrderStatus.js
-// DEV-FRIENDLY: returns real DB status if DB configured, otherwise simulates payment after a short delay.
-// Query parameters:
-//   GET /api/checkOrderStatus?orderId=123&created_at=2025-12-08T...Z
-
+// /api/updateOrderStatus.js
 import mysql from 'mysql2/promise';
 
-export default async function handler(req, res){
-  const { orderId, created_at } = req.method === 'GET' ? req.query : (req.body || {});
-  if(!orderId) return res.status(400).json({ success:false, error: 'Missing orderId' });
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ success:false, error: 'Method not allowed' });
+
+  // Simple API-key protection. Set UPDATE_API_KEY in Vercel env vars to something long and secret.
+  const expectedKey = process.env.UPDATE_API_KEY;
+  const provided = req.headers['x-api-key'] || req.body.apiKey || '';
+
+  if (!expectedKey || provided !== expectedKey) {
+    return res.status(401).json({ success:false, error: 'Unauthorized' });
+  }
+
+  const { orderId, status } = req.body || {};
+  if (!orderId || !status) return res.status(400).json({ success:false, error: 'Missing orderId or status' });
 
   const DB_HOST = process.env.DB_HOST;
   const DB_USER = process.env.DB_USER;
   const DB_PASS = process.env.DB_PASS;
   const DB_NAME = process.env.DB_NAME;
 
-  // If DB vars are missing - simulate:
-  if(!DB_HOST || !DB_USER || !DB_NAME){
-    // simulate: if created_at older than 10 seconds => PAID
-    const created = created_at ? new Date(created_at) : new Date();
-    const now = new Date();
-    const seconds = Math.floor((now - created) / 1000);
-    const demoDelay = 10; // seconds to simulate payment success
-    if(seconds >= demoDelay){
-      return res.status(200).json({ success:true, simulated:true, status:'PAID', created_at: created.toISOString(), note: `Simulated after ${seconds}s` });
-    } else {
-      return res.status(200).json({ success:true, simulated:true, status:'PENDING', created_at: created.toISOString(), note: `Will simulate PAID after ${demoDelay - seconds}s` });
-    }
+  if (!DB_HOST || !DB_USER || !DB_NAME) {
+    return res.status(500).json({ success:false, error: 'Database not configured on server' });
   }
 
-  // DB exists -> query orders table for payment_status
-  let connection;
+  let conn;
   try {
-    connection = await mysql.createConnection({
+    conn = await mysql.createConnection({
       host: DB_HOST,
       user: DB_USER,
       password: DB_PASS,
@@ -39,18 +34,21 @@ export default async function handler(req, res){
       connectTimeout: 10000
     });
 
-    const [rows] = await connection.execute('SELECT id, payment_status, created_at FROM orders WHERE id = ? LIMIT 1', [orderId]);
-    await connection.end();
+    const [result] = await conn.execute(
+      'UPDATE orders SET payment_status = ? WHERE id = ?',
+      [String(status).toUpperCase(), orderId]
+    );
 
-    if(!rows || rows.length === 0) return res.status(404).json({ success:false, error: 'Order not found' });
+    await conn.end();
 
-    const row = rows[0];
-    return res.status(200).json({ success:true, status: row.payment_status || 'PENDING', created_at: row.created_at });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success:false, error: 'Order not found' });
+    }
 
-  } catch(err){
-    console.error('DB error', err);
-    try { if(connection) await connection.end(); } catch(e){}
+    return res.status(200).json({ success:true, message: 'Order updated', orderId, status: String(status).toUpperCase() });
+  } catch (err) {
+    console.error('DB update error', err);
+    try { if (conn) await conn.end(); } catch(e){}
     return res.status(500).json({ success:false, error: 'Database error', detail: err.message });
   }
 }
-
