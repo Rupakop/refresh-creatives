@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Refresh Elixer — Pay with GPay / UPI</title>
+  <title>Refresh Elixer — UPI Checkout (Auto-detect)</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gradient-to-r from-black to-pink-600 text-white min-h-screen">
@@ -11,7 +11,7 @@
   <div class="max-w-6xl mx-auto py-12 px-4">
     <header class="text-center mb-6">
       <h1 class="text-4xl font-bold">Refresh Elixer</h1>
-      <p class="text-gray-200 mt-2">Pay via GPay / UPI — no gateway fees. Orders are saved to database for you to verify.</p>
+      <p class="text-gray-200 mt-2">Pay via GPay / UPI — site will attempt to detect payment automatically (or fallback to manual confirm).</p>
     </header>
 
     <div class="flex justify-center gap-3 mb-6">
@@ -20,18 +20,15 @@
 
     <div id="previewGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8"></div>
 
-    <footer class="text-center text-sm text-gray-200">UPI payments are instant — verify receipts in your bank app. Orders saved to DB for your processing.</footer>
+    <footer class="text-center text-sm text-gray-200">Automatic detection needs backend support; demo mode simulates success for testing.</footer>
   </div>
 
   <!-- Modal -->
   <div id="modal" class="fixed inset-0 hidden z-50 flex items-start justify-center overflow-auto bg-black/70 p-4">
     <div class="bg-white text-black rounded-xl max-w-5xl w-full p-4 mt-8">
       <div class="flex justify-between items-center mb-3">
-        <h2 class="text-xl font-semibold">Select Perfumes & Pay (GPay / UPI)</h2>
-        <div class="flex items-center gap-3">
-          <span id="stepIndicator" class="text-sm text-gray-600">Step: Selection</span>
-          <button id="closeModal" class="text-sm text-gray-600">Close</button>
-        </div>
+        <h2 class="text-xl font-semibold">Select Perfumes & Pay (UPI)</h2>
+        <button id="closeModal" class="text-sm text-gray-600">Close</button>
       </div>
 
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -66,30 +63,31 @@
             <h3 class="font-semibold">Delivery Details</h3>
             <div class="mt-2 space-y-2">
               <input id="custName" placeholder="Full name" class="w-full border px-2 py-1 rounded text-sm" />
-              <input id="custPhone" placeholder="Phone (include country code if outside India)" class="w-full border px-2 py-1 rounded text-sm" />
+              <input id="custPhone" placeholder="Phone" class="w-full border px-2 py-1 rounded text-sm" />
               <input id="addrLine" placeholder="Address line (street, house no.)" class="w-full border px-2 py-1 rounded text-sm" />
               <input id="addrLocality" placeholder="Locality (eg. Parel, Lalbaug)" class="w-full border px-2 py-1 rounded text-sm" />
               <input id="addrCity" placeholder="City" class="w-full border px-2 py-1 rounded text-sm" />
-              <div class="text-xs text-gray-600">Note: UPI payments are instant. Check your bank app to confirm receipt.</div>
             </div>
           </div>
 
           <div class="p-3 border rounded bg-gray-50 text-black">
             <h3 class="font-semibold">Pay via GPay / UPI</h3>
             <div class="mt-2 space-y-2">
+              <div class="text-sm mb-2">UPI ID: <b id="upiIdText" class="break-words">rupakmurkar41@oksbi</b></div>
               <div class="flex gap-2">
-                <button id="payUpiBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">Open UPI / GPay</button>
+                <button id="payUpiBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">Open UPI / GPay (Create order then open)</button>
                 <button id="copyUpiBtn" class="flex-1 bg-gray-200 text-black py-2 rounded">Copy UPI ID</button>
               </div>
-              <div class="text-sm text-gray-700">Or scan QR:</div>
-              <div class="mt-2 flex items-center gap-3">
-                <img id="qrImg" src="" alt="QR" class="w-36 h-36 bg-white/80 p-2 rounded" />
-                <div class="text-sm">
-                  <div>UPI ID: <b id="upiIdText" class="break-words"></b></div>
-                  <div class="mt-2">Amount: ₹<span id="upiAmount">0</span></div>
-                  <button id="iPaidBtn" class="mt-3 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded">I have paid — Save order</button>
-                </div>
+
+              <div class="mt-3 text-sm text-gray-700">
+                After opening UPI app, we will wait and try to detect payment automatically (polling). If automatic detection is unavailable, use the manual "I have paid" button.
               </div>
+
+              <div class="mt-3">
+                <button id="iPaidBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded">I have paid (manual)</button>
+              </div>
+
+              <div id="paymentStatus" class="mt-3 text-sm text-gray-700">Status: <span id="statusText">NOT STARTED</span></div>
             </div>
           </div>
 
@@ -101,7 +99,7 @@
       <div id="orderSummaryPanel" class="mt-4 hidden bg-white/95 text-black p-4 rounded">
         <h3 class="text-lg font-semibold">Order Saved — Summary</h3>
         <div id="orderSummaryContent" class="mt-2 text-sm"></div>
-        <div class="mt-3 text-sm text-green-700">Keep this info for verification. Verify the payment in your bank app before fulfilling.</div>
+        <div class="mt-3 text-sm text-green-700">Verify UPI payment in your bank app before shipping.</div>
         <div class="mt-3">
           <button id="closeSummary" class="px-3 py-1 border rounded">Close</button>
         </div>
@@ -111,14 +109,13 @@
   </div>
 
 <script>
-/* ========== CONFIG ========== */
-// Your actual UPI ID (already set as requested)
+/* =========== CONFIG =========== */
 const UPI_ID = 'rupakmurkar41@oksbi';
-
-// API endpoint to save orders (Vercel serverless)
+const MERCHANT_NAME = 'Refresh Elixer';
 const SAVE_ORDER_API = '/api/saveOrder';
+const CHECK_STATUS_API = '/api/checkOrderStatus'; // new API
 
-/* ========== DATA ========== */
+/* =========== DATA =========== */
 const PERFUMES = [
   { id:1, name:"Velvet Verse", inspired:"Poem", desc:"Warm floral blend with soft powdery notes and a romantic aura."},
   { id:2, name:"Pure Snow Musk", inspired:"White Musk", desc:"Clean, soft, airy musk with long-lasting freshness."},
@@ -165,16 +162,17 @@ const SIZES = [
   { code:100,label:"100 ml",price:749, image: 'images/generated-image__36_-removebg-preview.png' }
 ];
 
-/* ========== State ========== */
-let cart = []; // items: {perfumeId, sizeCode, qty}
+/* ========== state ========== */
+let cart = [];
+let currentOrder = null; // will store { insertId, created_at, ... }
 
-/* ========== Helpers ========== */
+/* ========== helpers ========== */
 function findPerfume(id){ return PERFUMES.find(p=>p.id===id); }
 function findSize(code){ return SIZES.find(s=>s.code==code) || SIZES[2]; }
 function calcTotal(){ return cart.reduce((sum,it)=> sum + (findSize(it.sizeCode).price * it.qty), 0); }
 function formatRupees(n){ return Number(n).toLocaleString('en-IN'); }
 
-/* ========== Render preview grid ========== */
+/* ========== render preview grid ========== */
 const previewGrid = document.getElementById('previewGrid');
 SIZES.forEach(size=>{
   const card = document.createElement('div');
@@ -192,7 +190,7 @@ SIZES.forEach(size=>{
   previewGrid.appendChild(card);
 });
 
-/* ========== Build perfume list in modal ========== */
+/* ========== build perfume list ========== */
 const perfumeListEl = document.getElementById('perfumeList');
 PERFUMES.forEach(p=>{
   const item = document.createElement('div');
@@ -228,16 +226,15 @@ const cartTotalEl = document.getElementById('cartTotal');
 const clearCartBtn = document.getElementById('clearCart');
 const payUpiBtn = document.getElementById('payUpiBtn');
 const copyUpiBtn = document.getElementById('copyUpiBtn');
-const qrImg = document.getElementById('qrImg');
-const upiAmountEl = document.getElementById('upiAmount');
 const upiIdText = document.getElementById('upiIdText');
 const iPaidBtn = document.getElementById('iPaidBtn');
 const msgEl = document.getElementById('msg');
+const paymentStatusEl = document.getElementById('statusText');
 const orderSummaryPanel = document.getElementById('orderSummaryPanel');
 const orderSummaryContent = document.getElementById('orderSummaryContent');
 const closeSummary = document.getElementById('closeSummary');
 
-/* ========== Modal open/close ========== */
+/* ========== modal open/close ========== */
 openSelectorBtn.addEventListener('click', openModal);
 document.querySelectorAll('.open-modal').forEach(btn=>btn.addEventListener('click', openModal));
 closeModalBtn.addEventListener('click', closeModal);
@@ -246,7 +243,7 @@ clearCartBtn.addEventListener('click', ()=>{ cart=[]; updateCartUI(); });
 function openModal(){ modal.classList.remove('hidden'); attachPerfumeControls(); cart.forEach(it=> syncInputs(it)); updateCartUI(); }
 function closeModal(){ modal.classList.add('hidden'); }
 
-/* ========== Attach controls ========== */
+/* ========== attach controls ========== */
 function attachPerfumeControls(){
   document.querySelectorAll('.perf-checkbox').forEach(chk=>{
     chk.onchange = ()=>{
@@ -281,15 +278,13 @@ function attachPerfumeControls(){
   });
 }
 
-/* ========== Cart UI ========== */
+/* ========== cart UI ========== */
 function updateCartUI(){
   cartItemsEl.innerHTML = '';
   if(cart.length===0){
     cartItemsEl.innerHTML = '<div class="text-sm text-gray-600">Cart is empty</div>';
     cartTotalEl.textContent = '0';
-    upiAmountEl.textContent = '0';
     upiIdText.textContent = UPI_ID;
-    qrImg.src = generateQr('upi://pay?pa=' + encodeURIComponent(UPI_ID));
     return;
   }
   cart.forEach((it, idx)=>{
@@ -326,15 +321,10 @@ function updateCartUI(){
   cartItemsEl.querySelectorAll('.rem').forEach(btn=> btn.onclick = ()=>{ const i=Number(btn.dataset.idx); const removed = cart.splice(i,1)[0]; const cb = document.querySelector(`.perf-checkbox[data-id="${removed.perfumeId}"]`); if(cb) cb.checked=false; updateCartUI(); });
 
   cartTotalEl.textContent = formatRupees(calcTotal());
-  upiAmountEl.textContent = calcTotal();
   upiIdText.textContent = UPI_ID;
-
-  // update QR for the exact amount
-  const upiLink = buildUpiLink(UPI_ID, 'Refresh Elixer', calcTotal(), 'Order from Refresh Elixer');
-  qrImg.src = generateQr(upiLink);
 }
 
-/* ========== Sync inputs ========== */
+/* ========== sync inputs ========== */
 function syncInputs(item){
   const sizeSel = document.querySelector(`.size-select[data-id="${item.perfumeId}"]`);
   const qtyInput = document.querySelector(`.qty-input[data-id="${item.perfumeId}"]`);
@@ -348,25 +338,9 @@ function buildUpiLink(pa, pn, amount, tn){
   const base = `upi://pay?pa=${encodeURIComponent(pa)}&pn=${encodeURIComponent(pn)}&tn=${encodeURIComponent(tn)}&am=${encodeURIComponent(a)}&cu=INR`;
   return base;
 }
-function generateQr(data){
-  return `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(data)}`;
-}
 
-/* ========== Actions: pay / copy / confirm (save to DB) ========== */
-payUpiBtn.addEventListener('click', ()=>{
-  if(cart.length===0){ showMsg('Cart is empty.'); return; }
-  const amount = calcTotal();
-  const upiLink = buildUpiLink(UPI_ID, 'Refresh Elixer', amount, 'Perfume order');
-  window.location.href = upiLink;
-  qrImg.src = generateQr(upiLink);
-});
-
-copyUpiBtn.addEventListener('click', ()=>{
-  navigator.clipboard.writeText(UPI_ID).then(()=> showMsg('UPI ID copied to clipboard.')).catch(()=> showMsg('Unable to copy — please copy manually.'));
-});
-
-iPaidBtn.addEventListener('click', async ()=>{
-  // validate
+/* ========== Actions: pay (create order then open UPI) ========== */
+payUpiBtn.addEventListener('click', async ()=>{
   if(cart.length===0){ showMsg('Cart is empty.'); return; }
   const name = document.getElementById('custName').value.trim();
   const phone = document.getElementById('custPhone').value.trim();
@@ -375,7 +349,7 @@ iPaidBtn.addEventListener('click', async ()=>{
   const city = document.getElementById('addrCity').value.trim();
   if(!name || !phone || (!line && !locality)){ showMsg('Please fill name, phone and address (line or locality).'); return; }
 
-  // build payload
+  // Build payload & save order (PENDING)
   const itemsPayload = cart.map(it=>{
     const p = findPerfume(it.perfumeId);
     const s = findSize(it.sizeCode);
@@ -387,36 +361,144 @@ iPaidBtn.addEventListener('click', async ()=>{
     address: line,
     city: city || '',
     items: itemsPayload,
-    amount: calcTotal(), // rupees as integer
+    amount: calcTotal(),
     upi_id: UPI_ID
   };
 
-  // send to server
-  showMsg('Saving order...');
+  showMsg('Creating order and opening UPI app...');
   try {
     const res = await fetch(SAVE_ORDER_API, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify(payload)
     });
     const j = await res.json();
-    if(res.ok && j.success){
-      // show full order summary returned (if server returns id)
-      const orderId = j.insertId || j.orderId || null;
-      showOrderSummary({ orderId, ...payload, created_at: j.created_at || new Date().toISOString() });
-      // clear cart
-      cart = [];
-      document.querySelectorAll('.perf-checkbox').forEach(cb=> cb.checked=false);
-      updateCartUI();
-      showMsg('Order saved.');
-    } else {
-      showMsg(j.error || 'Failed to save order.');
-    }
+    if(!res.ok || !j.success){ showMsg(j.error || 'Failed to create order'); return; }
+
+    // store current order
+    currentOrder = {
+      orderId: j.insertId || j.insertId || (j.orderId || null),
+      created_at: j.created_at || (j.echoed && j.echoed.created_at) || new Date().toISOString(),
+      payload
+    };
+
+    // open upi deep link
+    const upiLink = buildUpiLink(UPI_ID, MERCHANT_NAME, calcTotal(), 'Perfume order');
+    window.location.href = upiLink;
+
+    // start polling for status
+    startPollingStatus();
+
   } catch(err){
     console.error(err);
-    showMsg('Network error while saving order.');
+    showMsg('Network error while creating order.');
   }
 });
+
+/* Copy UPI ID */
+copyUpiBtn.addEventListener('click', ()=>{
+  navigator.clipboard.writeText(UPI_ID).then(()=> showMsg('UPI ID copied')).catch(()=> showMsg('Unable to copy'));
+});
+
+/* Manual "I have paid" (still supported) */
+iPaidBtn.addEventListener('click', async ()=>{
+  if(!currentOrder) {
+    // if no currentOrder (user used manual flow), create order then mark as PENDING then show summary
+    showMsg('Creating order (manual confirm)...');
+    // Create order then show saved summary (simulate)
+    const name = document.getElementById('custName').value.trim();
+    const phone = document.getElementById('custPhone').value.trim();
+    const line = document.getElementById('addrLine').value.trim();
+    const locality = document.getElementById('addrLocality').value.trim();
+    const city = document.getElementById('addrCity').value.trim();
+    if(!name || !phone || (!line && !locality)){ showMsg('Please fill required fields'); return; }
+
+    // build payload
+    const itemsPayload = cart.map(it=>{
+      const p = findPerfume(it.perfumeId);
+      const s = findSize(it.sizeCode);
+      return { id: p.id, name: p.name, inspired: p.inspired, size: s.label, qty: it.qty, unit_price: s.price };
+    });
+    const payload = { name, phone, address: line, city: city||'', items: itemsPayload, amount: calcTotal(), upi_id: UPI_ID };
+
+    try {
+      const res = await fetch(SAVE_ORDER_API, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      const j = await res.json();
+      if(!res.ok || !j.success){ showMsg(j.error || 'Failed to save order'); return; }
+      currentOrder = { orderId: j.insertId || j.insertId || null, created_at: j.created_at || new Date().toISOString(), payload };
+      // Show summary and set status to PROCESSING (since user says paid)
+      showOrderSummary({ orderId: currentOrder.orderId, ...currentOrder.payload, created_at: currentOrder.created_at });
+      setStatusText('PROCESSING');
+      cart = []; document.querySelectorAll('.perf-checkbox').forEach(cb=>cb.checked=false); updateCartUI();
+      showMsg('Order saved (manual). Verify payment in bank app.');
+    } catch(err){ console.error(err); showMsg('Network error while saving order (manual).'); }
+    return;
+  }
+
+  // If currentOrder exists already, we can optionally call API to set status — but we don't have permission here.
+  showMsg('Manual confirm pressed. Please mark the order as PAID in admin panel or DB.');
+});
+
+/* ========== Polling logic: check order status ========== */
+let pollInterval = null;
+let pollAttempts = 0;
+const MAX_POLL_ATTEMPTS = 60; // 60 * 5s = 5 minutes
+
+function setStatusText(txt){
+  paymentStatusEl.textContent = txt;
+}
+
+async function checkOrderStatusOnce(orderId, createdAt){
+  try {
+    const res = await fetch(CHECK_STATUS_API + '?orderId=' + encodeURIComponent(orderId) + '&created_at=' + encodeURIComponent(createdAt));
+    if(!res.ok) return { ok:false, error: 'Network' };
+    const j = await res.json();
+    return { ok:true, data:j };
+  } catch(err){
+    return { ok:false, error: String(err) };
+  }
+}
+
+function startPollingStatus(){
+  if(!currentOrder || !currentOrder.orderId){ return; }
+  pollAttempts = 0;
+  setStatusText('AWAITING PAYMENT');
+  // poll every 5 seconds
+  pollInterval = setInterval(async ()=>{
+    pollAttempts++;
+    const result = await checkOrderStatusOnce(currentOrder.orderId, currentOrder.created_at);
+    if(!result.ok){
+      console.warn('poll error', result.error);
+      setStatusText('AWAITING PAYMENT (network...)');
+      if(pollAttempts > MAX_POLL_ATTEMPTS) {
+        clearInterval(pollInterval);
+        setStatusText('TIMEOUT — please confirm manually');
+      }
+      return;
+    }
+    const d = result.data;
+    // expected response: { success:true, status: 'PENDING'|'PAID'|'PROCESSING', ... }
+    const status = (d && d.status) ? d.status.toUpperCase() : (d && d.success && d.simulated ? 'PAID' : 'PENDING');
+    if(status === 'PENDING') {
+      setStatusText('AWAITING PAYMENT');
+    } else if(status === 'PROCESSING') {
+      setStatusText('PROCESSING');
+    } else if(status === 'PAID' || status === 'COMPLETED') {
+      setStatusText('COMPLETED');
+      clearInterval(pollInterval);
+      // show summary
+      showOrderSummary({ orderId: currentOrder.orderId, ...currentOrder.payload, created_at: d.created_at || currentOrder.created_at });
+      // clear cart
+      cart = []; document.querySelectorAll('.perf-checkbox').forEach(cb=>cb.checked=false); updateCartUI();
+    } else {
+      setStatusText(status);
+    }
+    if(pollAttempts > MAX_POLL_ATTEMPTS) {
+      clearInterval(pollInterval);
+      setStatusText('TIMEOUT — manual confirm required');
+    }
+  }, 5000);
+}
 
 /* ========== display order summary ========== */
 function showOrderSummary(order){
@@ -445,7 +527,6 @@ function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=> ({'&':'&amp
 /* ========== init ========== */
 function init(){
   upiIdText.textContent = UPI_ID;
-  qrImg.src = generateQr('upi://pay?pa=' + encodeURIComponent(UPI_ID));
   document.getElementById('defaultSize').addEventListener('change', (e)=>{
     const code = Number(e.target.value);
     document.querySelectorAll('.size-select').forEach(sel=> sel.value = code);
