@@ -11,7 +11,7 @@
   <div class="max-w-6xl mx-auto py-12 px-4">
     <header class="text-center mb-6">
       <h1 class="text-4xl font-bold">Refresh Elixer</h1>
-      <p class="text-gray-200 mt-2">Select your perfume, enter delivery details and pay via UPI.</p>
+      <!-- removed the line you asked to delete -->
     </header>
 
     <div class="flex justify-center gap-3 mb-6">
@@ -20,7 +20,7 @@
 
     <div id="previewGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8"></div>
 
-    <footer class="text-center text-sm text-gray-200">Orders are saved and will show a confirmation once payment is detected.</footer>
+    <!-- footer sentence removed as requested -->
   </div>
 
   <!-- Modal -->
@@ -98,12 +98,27 @@
         </div>
       </div>
 
+      <!-- Fallback modal shown when UPI deep-link fails -->
+      <div id="upiFallback" class="mt-4 hidden bg-white/95 text-black p-4 rounded">
+        <h3 class="text-lg font-semibold">Pay from your phone</h3>
+        <p class="text-sm mt-2">If the payment app didn't open, copy the UPI ID below on your phone and pay using your UPI app (GPay / PhonePe / BHIM).</p>
+        <div class="mt-3 flex items-center gap-3">
+          <input id="fallbackUpi" class="border px-2 py-1 rounded w-72" readonly />
+          <button id="copyFallback" class="px-3 py-1 bg-gray-800 text-white rounded">Copy</button>
+        </div>
+        <div class="mt-3 text-sm text-gray-600">After payment, click "I have paid".</div>
+        <div class="mt-3">
+          <button id="closeFallback" class="px-3 py-1 border rounded">Close</button>
+        </div>
+      </div>
+
     </div>
   </div>
 
 <script>
 /* =========== CONFIG =========== */
-const UPI_ID = 'rupakmurkar41@oksbi'; // kept in JS only (not shown on UI)
+// UPI kept in JS only (not shown on UI)
+const UPI_ID = 'rupakmurkar41@oksbi';
 const MERCHANT_NAME = 'Refresh Elixer';
 const SAVE_ORDER_API = '/api/saveOrder';
 const CHECK_STATUS_API = '/api/checkOrderStatus';
@@ -225,6 +240,10 @@ const paymentStatusEl = document.getElementById('statusText');
 const orderSummaryPanel = document.getElementById('orderSummaryPanel');
 const orderSummaryContent = document.getElementById('orderSummaryContent');
 const closeSummary = document.getElementById('closeSummary');
+const upiFallback = document.getElementById('upiFallback');
+const fallbackUpi = document.getElementById('fallbackUpi');
+const copyFallback = document.getElementById('copyFallback');
+const closeFallback = document.getElementById('closeFallback');
 
 /* ========== modal open/close ========== */
 openSelectorBtn.addEventListener('click', openModal);
@@ -233,7 +252,7 @@ closeModalBtn.addEventListener('click', closeModal);
 clearCartBtn.addEventListener('click', ()=>{ cart=[]; updateCartUI(); });
 
 function openModal(){ modal.classList.remove('hidden'); attachPerfumeControls(); cart.forEach(it=> syncInputs(it)); updateCartUI(); }
-function closeModal(){ modal.classList.add('hidden'); }
+function closeModal(){ modal.classList.add('hidden'); upiFallback.classList.add('hidden'); }
 
 /* ========== attach controls ========== */
 function attachPerfumeControls(){
@@ -372,9 +391,45 @@ payUpiBtn.addEventListener('click', async ()=>{
       payload
     };
 
-    // open upi deep link (user's UPI app)
+    // Attempt to open UPI app — try deep link first.
     const upiLink = buildUpiLink(UPI_ID, MERCHANT_NAME, calcTotal(), 'Perfume order');
-    window.location.href = upiLink;
+
+    // Try to open the link. On mobile UPI apps respect this and open.
+    // If nothing happens within timeout, show fallback with UPI ID (user can copy and pay manually).
+    let opened = false;
+    try {
+      // Best-effort: change location (works in most mobile browsers)
+      window.location.href = upiLink;
+      opened = true;
+    } catch(e) {
+      // fallback to anchor click
+      try {
+        const a = document.createElement('a');
+        a.href = upiLink;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        opened = true;
+      } catch(e2) {
+        opened = false;
+      }
+    }
+
+    // If on desktop or deep-link didn't open, show fallback after short delay
+    const fallbackDelay = 1200; // ms
+    setTimeout(()=> {
+      // If user agent is desktop-like or opening didn't work, show fallback UI
+      const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (!isMobile || !opened) {
+        // Show fallback instructions & copyable UPI (UI element)
+        fallbackUpi.value = UPI_ID;
+        upiFallback.classList.remove('hidden');
+      } else {
+        // mobile: don't show fallback immediately (user likely has the app open)
+        // but still start polling for status
+      }
+    }, fallbackDelay);
 
     // start polling for status
     startPollingStatus();
@@ -418,6 +473,13 @@ iPaidBtn.addEventListener('click', async ()=>{
 
   showMsg('Manual confirm pressed. Mark order as PAID in admin when payment is verified.');
 });
+
+/* ========== Fallback copy handlers ========== */
+copyFallback.addEventListener('click', ()=>{
+  const text = fallbackUpi.value || UPI_ID;
+  navigator.clipboard.writeText(text).then(()=> showMsg('UPI copied. Paste into your UPI app to pay.')).catch(()=> showMsg('Copy failed — select and copy manually.'));
+});
+closeFallback.addEventListener('click', ()=> upiFallback.classList.add('hidden'));
 
 /* ========== Polling logic: check order status ========== */
 let pollAttempts = 0;
