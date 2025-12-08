@@ -1,53 +1,34 @@
-// /api/saveOrder.js
-// DEV-FRIENDLY VERSION — WORKS EVEN WITHOUT DATABASE
-// When DB environment variables exist, it will save to MySQL.
-// When DB is missing, it returns a simulated success so your
-// frontend flow works without errors.
+// /api/checkOrderStatus.js
+// DEV-FRIENDLY: returns real DB status if DB configured, otherwise simulates payment after a short delay.
+// Query parameters:
+//   GET /api/checkOrderStatus?orderId=123&created_at=2025-12-08T...Z
 
 import mysql from 'mysql2/promise';
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, error: 'Method not allowed' });
-  }
+export default async function handler(req, res){
+  const { orderId, created_at } = req.method === 'GET' ? req.query : (req.body || {});
+  if(!orderId) return res.status(400).json({ success:false, error: 'Missing orderId' });
 
-  const { name, phone, address, city, items, amount, upi_id } = req.body || {};
-
-  // Basic validation
-  if (!name || !phone || !address || !items || !amount) {
-    return res.status(400).json({ success: false, error: 'Missing required fields' });
-  }
-
-  // Read DB environment variables from Vercel
   const DB_HOST = process.env.DB_HOST;
   const DB_USER = process.env.DB_USER;
   const DB_PASS = process.env.DB_PASS;
   const DB_NAME = process.env.DB_NAME;
 
-  // If DB is NOT configured → return simulated success
-  if (!DB_HOST || !DB_USER || !DB_NAME) {
-    console.warn('⚠️ WARNING: DB not configured — returning simulated success.');
-
-    return res.status(200).json({
-      success: true,
-      insertId: Math.floor(Math.random() * 100000) + 1000, // random fake ID
-      message: 'Simulated save (DB not configured yet)',
-      created_at: new Date().toISOString(),
-
-      // Echo back data so frontend can show full summary
-      echoed: {
-        name,
-        phone,
-        address,
-        city,
-        items,
-        amount,
-        upi_id
-      }
-    });
+  // If DB vars are missing - simulate:
+  if(!DB_HOST || !DB_USER || !DB_NAME){
+    // simulate: if created_at older than 10 seconds => PAID
+    const created = created_at ? new Date(created_at) : new Date();
+    const now = new Date();
+    const seconds = Math.floor((now - created) / 1000);
+    const demoDelay = 10; // seconds to simulate payment success
+    if(seconds >= demoDelay){
+      return res.status(200).json({ success:true, simulated:true, status:'PAID', created_at: created.toISOString(), note: `Simulated after ${seconds}s` });
+    } else {
+      return res.status(200).json({ success:true, simulated:true, status:'PENDING', created_at: created.toISOString(), note: `Will simulate PAID after ${demoDelay - seconds}s` });
+    }
   }
 
-  // If DB exists → try saving for real
+  // DB exists -> query orders table for payment_status
   let connection;
   try {
     connection = await mysql.createConnection({
@@ -58,40 +39,18 @@ export default async function handler(req, res) {
       connectTimeout: 10000
     });
 
-    const insertSql = `
-      INSERT INTO orders (customer_name, phone, address, city, items, amount, upi_id, payment_status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-
-    const [result] = await connection.execute(insertSql, [
-      name,
-      phone,
-      address,
-      city || '',
-      JSON.stringify(items),
-      Math.round(Number(amount)),
-      upi_id || '',
-      'PENDING'
-    ]);
-
+    const [rows] = await connection.execute('SELECT id, payment_status, created_at FROM orders WHERE id = ? LIMIT 1', [orderId]);
     await connection.end();
 
-    return res.status(200).json({
-      success: true,
-      insertId: result.insertId,
-      message: 'Order saved',
-      created_at: new Date().toISOString()
-    });
+    if(!rows || rows.length === 0) return res.status(404).json({ success:false, error: 'Order not found' });
 
-  } catch (err) {
-    console.error('❌ DB error:', err);
+    const row = rows[0];
+    return res.status(200).json({ success:true, status: row.payment_status || 'PENDING', created_at: row.created_at });
 
-    try { if (connection) await connection.end(); } catch (e) {}
-
-    return res.status(500).json({
-      success: false,
-      error: 'Database error (check logs)',
-      detail: err.message
-    });
+  } catch(err){
+    console.error('DB error', err);
+    try { if(connection) await connection.end(); } catch(e){}
+    return res.status(500).json({ success:false, error: 'Database error', detail: err.message });
   }
 }
+
