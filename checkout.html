@@ -1,127 +1,173 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Checkout — Refresh Elixir</title>
+<meta charset="utf-8">
+<title>Checkout – Refresh Elixir</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-neutral-950 text-white">
 
-<div class="max-w-5xl mx-auto px-6 py-16">
+<header class="max-w-4xl mx-auto px-6 py-6 flex justify-between">
+  <a href="index.html">← Back</a>
+  <h1 class="font-semibold">Checkout</h1>
+</header>
 
-<h1 class="text-3xl font-bold mb-10">Checkout</h1>
+<section class="max-w-4xl mx-auto px-6 py-10 space-y-8">
 
-<div id="cart" class="space-y-4"></div>
+  <!-- CART -->
+  <div class="bg-neutral-900 rounded-2xl p-6">
+    <h2 class="text-lg font-semibold mb-4">Your Cart</h2>
+    <div id="cartItems" class="space-y-3"></div>
+    <div class="flex justify-between mt-4 font-semibold">
+      <span>Total</span>
+      <span>₹<span id="total">0</span></span>
+    </div>
+  </div>
 
-<div class="text-xl font-semibold mt-6">
-  Total: ₹<span id="total">0</span>
-</div>
+  <!-- CUSTOMER DETAILS -->
+  <div class="bg-neutral-900 rounded-2xl p-6 space-y-4">
+    <h2 class="text-lg font-semibold">Delivery Details</h2>
+    <input id="name" placeholder="Full Name" class="w-full bg-neutral-800 px-4 py-2 rounded">
+    <input id="phone" placeholder="Phone Number" class="w-full bg-neutral-800 px-4 py-2 rounded">
+    <textarea id="address" placeholder="Full Address"
+      class="w-full bg-neutral-800 px-4 py-2 rounded"></textarea>
+  </div>
 
-<div class="mt-10 space-y-3">
-  <input placeholder="Full name" class="checkout-input">
-  <input placeholder="Phone" class="checkout-input">
-  <input placeholder="Address" class="checkout-input">
-</div>
+  <!-- PAYMENT -->
+  <div class="bg-neutral-900 rounded-2xl p-6 space-y-4">
+    <h2 class="text-lg font-semibold">Payment</h2>
 
-<button id="pay"
-  class="mt-6 bg-pink-600 w-full py-3 rounded-xl font-medium">
-  Pay via UPI
-</button>
+    <button id="payUpi"
+      class="bg-blue-600 hover:bg-blue-700 w-full py-3 rounded-xl font-medium">
+      Pay via UPI
+    </button>
 
-</div>
+    <!-- FALLBACK -->
+    <div id="upiFallback" class="hidden text-center space-y-3 pt-4">
+      <p class="text-sm text-white/70">
+        If UPI app did not open, pay manually:
+      </p>
+
+      <!-- OPTIONAL QR (recommended) -->
+      <!-- Put upi-qr.png in root folder -->
+      <img src="upi-qr.png" alt="UPI QR"
+        class="mx-auto w-40 rounded bg-white p-2">
+
+      <div class="bg-neutral-800 px-4 py-2 rounded text-sm">
+        rupakmurkar41@oksbi
+      </div>
+
+      <button onclick="copyUpi()"
+        class="text-pink-400 text-sm">
+        Copy UPI ID
+      </button>
+
+      <p class="text-xs text-white/40">
+        After payment, your order will be confirmed manually.
+      </p>
+    </div>
+  </div>
+
+</section>
 
 <script>
+/* ===== LOAD CART ===== */
 let cart = JSON.parse(localStorage.getItem("cart") || "[]");
-const cartEl = document.getElementById("cart");
+const cartEl = document.getElementById("cartItems");
 const totalEl = document.getElementById("total");
 
 function renderCart() {
   cartEl.innerHTML = "";
   let total = 0;
 
-  if (cart.length === 0) {
-    cartEl.innerHTML = `<p class="text-white/60">Your cart is empty.</p>`;
+  if (!cart.length) {
+    cartEl.innerHTML = `<p class="text-white/60">Cart is empty</p>`;
     totalEl.textContent = "0";
     return;
   }
 
-  cart.forEach((item, index) => {
+  cart.forEach((item, i) => {
     total += item.price * item.qty;
-
-    const row = document.createElement("div");
-    row.className = "bg-neutral-900 p-4 rounded-xl flex justify-between";
-
-    row.innerHTML = `
-      <div>
-        <div class="font-medium">
-          ${item.name} (${item.size} ml)
+    cartEl.innerHTML += `
+      <div class="flex justify-between items-center bg-neutral-800 px-4 py-2 rounded">
+        <div>
+          <p class="font-medium">${item.name}</p>
+          <p class="text-xs text-white/60">${item.size} ml × ${item.qty}</p>
         </div>
-        <div class="flex items-center gap-2 mt-2">
-          <button class="qty-btn" data-i="${index}" data-a="dec">−</button>
-          <span>${item.qty}</span>
-          <button class="qty-btn" data-i="${index}" data-a="inc">+</button>
-          <button class="remove-btn" data-i="${index}">Remove</button>
+        <div class="flex items-center gap-2">
+          <button onclick="updateQty(${i},-1)" class="px-2">−</button>
+          <button onclick="updateQty(${i},1)" class="px-2">+</button>
+          <button onclick="removeItem(${i})" class="text-red-400">✕</button>
         </div>
-      </div>
-      <div class="font-medium">
-        ₹${item.price * item.qty}
       </div>
     `;
-
-    cartEl.appendChild(row);
   });
 
   totalEl.textContent = total;
-  localStorage.setItem("cart", JSON.stringify(cart));
 }
 
-cartEl.onclick = (e) => {
-  const i = e.target.dataset.i;
-  if (i === undefined) return;
+function updateQty(i, d) {
+  cart[i].qty += d;
+  if (cart[i].qty < 1) cart[i].qty = 1;
+  save();
+}
 
-  if (e.target.dataset.a === "inc") cart[i].qty++;
-  if (e.target.dataset.a === "dec") {
-    cart[i].qty--;
-    if (cart[i].qty <= 0) cart.splice(i, 1);
-  }
-  if (e.target.classList.contains("remove-btn")) {
-    cart.splice(i, 1);
-  }
+function removeItem(i) {
+  cart.splice(i, 1);
+  save();
+}
 
+function save() {
+  localStorage.setItem("cart", JSON.stringify(cart));
   renderCart();
-};
+}
 
 renderCart();
 
-document.getElementById("pay").onclick = () => {
-  if (!cart.length) return alert("Cart is empty");
-  const total = totalEl.textContent;
-  window.location.href =
-    `upi://pay?pa=rupakmurkar41@oksbi&pn=Refresh%20Elixir&am=${total}&cu=INR`;
-};
-</script>
+/* ===== UPI PAYMENT ===== */
+document.getElementById("payUpi").onclick = () => {
+  if (!cart.length) {
+    alert("Cart is empty");
+    return;
+  }
 
-<style>
-.checkout-input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  background: #0a0a0a;
-  border: 1px solid rgba(255,255,255,.15);
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const address = document.getElementById("address").value.trim();
+
+  if (!name || !phone || !address) {
+    alert("Please fill delivery details");
+    return;
+  }
+
+  const amount = totalEl.textContent;
+  const upiId = "rupakmurkar41@oksbi";
+  const merchant = "Refresh Elixir";
+
+  const upiUrl =
+    `upi://pay?pa=${upiId}&pn=${encodeURIComponent(merchant)}&am=${amount}&cu=INR`;
+
+  const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    window.location.href = upiUrl;
+    setTimeout(showFallback, 1500);
+  } else {
+    showFallback();
+  }
+};
+
+function showFallback() {
+  document.getElementById("upiFallback").classList.remove("hidden");
 }
-.qty-btn {
-  border: 1px solid rgba(255,255,255,.3);
-  padding: 2px 10px;
-  border-radius: 6px;
+
+function copyUpi() {
+  navigator.clipboard.writeText("rupakmurkar41@oksbi");
+  alert("UPI ID copied");
 }
-.remove-btn {
-  font-size: 12px;
-  color: #f87171;
-  margin-left: 8px;
-}
-</style>
+</script>
 
 </body>
 </html>
