@@ -3,39 +3,46 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Velvet Verse</title>
+  <title>Velvet Verse — Refresh Elixir</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-neutral-950 text-white">
 
 <header class="max-w-6xl mx-auto px-6 py-8 flex justify-between">
-  <a href="index.html">Refresh Elixir</a>
+  <a href="index.html" class="font-semibold">Refresh Elixir</a>
   <a href="checkout.html" class="text-sm text-white/60">Cart</a>
 </header>
 
 <section class="max-w-6xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-14">
 
-  <div class="bg-neutral-100 rounded-3xl h-[480px]
-              flex items-center justify-center">
-    <img src="images/100ml.jpg"
-         class="max-h-[85%] object-contain">
+  <!-- IMAGE -->
+  <div class="bg-neutral-100 rounded-3xl h-[480px] flex items-center justify-center">
+    <img
+      id="productImage"
+      src="images/30ml.jpg"
+      class="max-h-[85%] object-contain"
+      alt="Perfume bottle"
+    />
   </div>
 
+  <!-- DETAILS -->
   <div class="space-y-6">
+
     <h1 class="text-3xl font-bold">Velvet Verse</h1>
     <p class="text-white/70">
-      Warm floral blend with soft powdery notes.
+      Warm floral blend with soft powdery notes and a romantic aura.
     </p>
 
+    <!-- SIZE SELECTOR -->
     <div class="space-y-2">
-      <p>Select size</p>
-      <div class="flex gap-3">
-        <button data-size="10">10 ml</button>
-        <button data-size="20">20 ml</button>
-        <button data-size="30" class="active">30 ml</button>
-        <button data-size="60">60 ml</button>
-        <button data-size="100">100 ml</button>
+      <p class="font-medium">Select size</p>
+      <div class="flex gap-3 flex-wrap">
+        <button class="size-btn" data-size="10">10 ml</button>
+        <button class="size-btn" data-size="20">20 ml</button>
+        <button class="size-btn active" data-size="30">30 ml</button>
+        <button class="size-btn" data-size="60">60 ml</button>
+        <button class="size-btn" data-size="100">100 ml</button>
       </div>
     </div>
 
@@ -43,37 +50,74 @@
       ₹<span id="price">320</span>
     </div>
 
-    <button id="addToCart"
-      class="bg-pink-600 w-full py-3 rounded-xl">
+    <button
+      id="addToCart"
+      class="bg-pink-600 hover:bg-pink-700 w-full py-3 rounded-xl font-medium">
       Add to Cart
     </button>
-  </div>
 
+  </div>
 </section>
 
 <script>
-const PRICES = {10:99,20:199,30:320,60:499,100:749};
-let size = 30;
+const DATA = {
+  10: { price: 99, image: "images/10ml.jpg" },
+  20: { price: 199, image: "images/20ml.jpg" },
+  30: { price: 320, image: "images/30ml.jpg" },
+  60: { price: 499, image: "images/60ml.jpg" },
+  100:{ price: 749, image: "images/100ml.jpg" }
+};
 
-document.querySelectorAll("[data-size]").forEach(btn=>{
-  btn.onclick=()=>{
-    size = Number(btn.dataset.size);
-    document.getElementById("price").textContent = PRICES[size];
+let selectedSize = 30;
+const priceEl = document.getElementById("price");
+const imgEl = document.getElementById("productImage");
+
+document.querySelectorAll(".size-btn").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    selectedSize = Number(btn.dataset.size);
+    priceEl.textContent = DATA[selectedSize].price;
+    imgEl.src = DATA[selectedSize].image;
   };
 });
 
-document.getElementById("addToCart").onclick=()=>{
-  const cart = JSON.parse(localStorage.getItem("cart")||"[]");
-  cart.push({
-    name:"Velvet Verse",
-    size,
-    price:PRICES[size],
-    qty:1
-  });
-  localStorage.setItem("cart",JSON.stringify(cart));
-  location.href="checkout.html";
+document.getElementById("addToCart").onclick = () => {
+  let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+  const existing = cart.find(
+    i => i.name === "Velvet Verse" && i.size === selectedSize
+  );
+
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({
+      name: "Velvet Verse",
+      size: selectedSize,
+      price: DATA[selectedSize].price,
+      qty: 1
+    });
+  }
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+  window.location.href = "checkout.html";
 };
 </script>
 
+<style>
+.size-btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.3);
+}
+.size-btn.active {
+  background: #db2777;
+  border-color: #db2777;
+}
+</style>
+
 </body>
 </html>
+
