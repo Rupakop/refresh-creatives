@@ -1,123 +1,97 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Velvet Verse — Refresh Elixir</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title id="seoTitle"></title>
+<meta id="seoDesc" name="description">
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-neutral-950 text-white">
 
-<header class="max-w-6xl mx-auto px-6 py-8 flex justify-between">
-  <a href="index.html" class="font-semibold">Refresh Elixir</a>
-  <a href="checkout.html" class="text-sm text-white/60">Cart</a>
+<header class="max-w-6xl mx-auto px-6 py-6 flex justify-between">
+  <a href="index.html">← Back</a>
+  <a href="checkout.html">Cart</a>
 </header>
 
-<section class="max-w-6xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-14">
+<section class="max-w-6xl mx-auto px-6 py-14 grid md:grid-cols-2 gap-14">
 
-  <!-- IMAGE -->
   <div class="bg-neutral-100 rounded-3xl h-[480px] flex items-center justify-center">
-    <img
-      id="productImage"
-      src="images/30ml.jpg"
-      class="max-h-[85%] object-contain"
-      alt="Perfume bottle"
-    />
+    <img id="productImage" class="max-h-[85%] object-contain">
   </div>
 
-  <!-- DETAILS -->
-  <div class="space-y-6">
+  <div class="space-y-5">
+    <h1 id="name" class="text-3xl font-bold"></h1>
+    <p id="inspired" class="text-pink-400 text-sm"></p>
+    <p id="desc" class="text-white/70"></p>
 
-    <h1 class="text-3xl font-bold">Velvet Verse</h1>
-    <p class="text-white/70">
-      Warm floral blend with soft powdery notes and a romantic aura.
+    <p class="text-xs text-white/50">
+      *Inspired by reference only. Not affiliated with any brand.
     </p>
 
-    <!-- SIZE SELECTOR -->
-    <div class="space-y-2">
-      <p class="font-medium">Select size</p>
-      <div class="flex gap-3 flex-wrap">
-        <button class="size-btn" data-size="10">10 ml</button>
-        <button class="size-btn" data-size="20">20 ml</button>
-        <button class="size-btn active" data-size="30">30 ml</button>
-        <button class="size-btn" data-size="60">60 ml</button>
-        <button class="size-btn" data-size="100">100 ml</button>
-      </div>
+    <div class="flex gap-3 flex-wrap">
+      <button data-s="10">10 ml</button>
+      <button data-s="20">20 ml</button>
+      <button data-s="30" class="active">30 ml</button>
+      <button data-s="60">60 ml</button>
+      <button data-s="100">100 ml</button>
     </div>
 
     <div class="text-2xl font-semibold">
-      ₹<span id="price">320</span>
+      ₹<span id="price"></span>
     </div>
 
-    <button
-      id="addToCart"
-      class="bg-pink-600 hover:bg-pink-700 w-full py-3 rounded-xl font-medium">
-      Add to Cart
-    </button>
-
+    <button id="add"
+      class="bg-pink-600 w-full py-3 rounded-xl">Add to cart</button>
   </div>
 </section>
 
 <script>
-const DATA = {
-  10: { price: 99, image: "images/10ml.jpg" },
-  20: { price: 199, image: "images/20ml.jpg" },
-  30: { price: 320, image: "images/30ml.jpg" },
-  60: { price: 499, image: "images/60ml.jpg" },
-  100:{ price: 749, image: "images/100ml.jpg" }
+const PERFUMES = JSON.parse(localStorage.getItem("perfumes")||"null") || [
+ {id:1,name:"Velvet Verse",inspired:"Poem",desc:"Warm floral blend."},
+ {id:2,name:"Pure Snow Musk",inspired:"White Musk",desc:"Clean airy musk."},
+ {id:3,name:"Midnight Dreamer",inspired:"Dream",desc:"Light sweet freshness."}
+];
+
+const SIZES = {
+ 10:{p:99,i:"images/10ml.jpg"},
+ 20:{p:199,i:"images/20ml.jpg"},
+ 30:{p:320,i:"images/30ml.jpg"},
+ 60:{p:499,i:"images/60ml.jpg"},
+100:{p:749,i:"images/100ml.jpg"}
 };
 
-let selectedSize = 30;
-const priceEl = document.getElementById("price");
-const imgEl = document.getElementById("productImage");
+const id = Number(new URLSearchParams(location.search).get("id"));
+const perfume = PERFUMES.find(p=>p.id===id) || PERFUMES[0];
 
-document.querySelectorAll(".size-btn").forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
+document.getElementById("name").textContent = perfume.name;
+document.getElementById("inspired").textContent = "Inspired by " + perfume.inspired;
+document.getElementById("desc").textContent = perfume.desc;
+document.getElementById("seoTitle").textContent =
+  `${perfume.name} – Inspired Perfume | Refresh Elixir`;
+document.getElementById("seoDesc").content = perfume.desc;
 
-    selectedSize = Number(btn.dataset.size);
-    priceEl.textContent = DATA[selectedSize].price;
-    imgEl.src = DATA[selectedSize].image;
+let size = 30;
+document.getElementById("price").textContent = SIZES[size].p;
+document.getElementById("productImage").src = SIZES[size].i;
+
+document.querySelectorAll("[data-s]").forEach(b=>{
+  b.onclick=()=>{
+    size=+b.dataset.s;
+    document.getElementById("price").textContent=SIZES[size].p;
+    document.getElementById("productImage").src=SIZES[size].i;
   };
 });
 
-document.getElementById("addToCart").onclick = () => {
-  let cart = JSON.parse(localStorage.getItem("cart") || "[]");
-
-  const existing = cart.find(
-    i => i.name === "Velvet Verse" && i.size === selectedSize
-  );
-
-  if (existing) {
-    existing.qty += 1;
-  } else {
-    cart.push({
-      name: "Velvet Verse",
-      size: selectedSize,
-      price: DATA[selectedSize].price,
-      qty: 1
-    });
-  }
-
-  localStorage.setItem("cart", JSON.stringify(cart));
-  window.location.href = "checkout.html";
+document.getElementById("add").onclick=()=>{
+  const cart = JSON.parse(localStorage.getItem("cart")||"[]");
+  const ex = cart.find(i=>i.id===perfume.id && i.size===size);
+  ex ? ex.qty++ : cart.push({id:perfume.id,name:perfume.name,size,price:SIZES[size].p,qty:1});
+  localStorage.setItem("cart",JSON.stringify(cart));
+  location.href="checkout.html";
 };
 </script>
 
-<style>
-.size-btn {
-  padding: 8px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,.3);
-}
-.size-btn.active {
-  background: #db2777;
-  border-color: #db2777;
-}
-</style>
-
 </body>
 </html>
-
