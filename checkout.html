@@ -63,7 +63,7 @@
 <script>
 /* ================= CONFIG ================= */
 const SHEET_API_URL =
-  "https://script.google.com/macros/s/AKfycbzrTVgx8cRlxD8gj_OD4NIwzFppn330LXTNYNjsAxxYCZyGqAgBGI5fc8z6lI-WAXuWig/exec";
+  "https://script.google.com/macros/s/AKfycbyGdN9mSlUPGORra_oognMjha47hN8qne2c6qyfkGBLvuWjs5NM349NSiGTfV0BKgnCKQ/exec";
 
 const UPI_ID = "7977085466@pytes";
 const MERCHANT = "Refresh Elixir";
@@ -146,13 +146,13 @@ document.getElementById("payUpi").onclick = async () => {
   };
 
   try {
-    // SAVE ORDER TO GOOGLE SHEETS
+    /* SAVE ORDER TO GOOGLE SHEETS */
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(order));
+
     const res = await fetch(SHEET_API_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(order)
+      body: formData
     });
 
     if (!res.ok) {
@@ -160,7 +160,7 @@ document.getElementById("payUpi").onclick = async () => {
       return;
     }
 
-    // OPEN PAYMENT
+    /* OPEN PAYMENT */
     const upiUrl =
       `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(MERCHANT)}&am=${order.amount}&cu=INR`;
 
@@ -183,4 +183,3 @@ document.getElementById("payUpi").onclick = async () => {
 
 </body>
 </html>
-
