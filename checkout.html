@@ -65,7 +65,7 @@
 const SHEET_API_URL =
   "https://script.google.com/macros/s/AKfycbyp54yVqUHWwTr5UXJom1688PRWsQNSeN3l9NqVYwCVqRYSKuOXMdh34b--lIR92Syk6g/exec";
 
-const UPI_ID = "rupakmurkar41@oksbi";
+const UPI_ID = "7977085466@pytes";
 const MERCHANT = "Refresh Elixir";
 
 /* ================= CART ================= */
@@ -162,7 +162,7 @@ document.getElementById("payUpi").onclick = async () => {
 
     // OPEN PAYMENT
     const upiUrl =
-      `upi://pay?pa=${7977085466@ptyes}&pn=${encodeURIComponent(MERCHANT)}&am=${order.amount}&cu=INR`;
+      `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(MERCHANT)}&am=${order.amount}&cu=INR`;
 
     const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
 
@@ -183,3 +183,4 @@ document.getElementById("payUpi").onclick = async () => {
 
 </body>
 </html>
+
