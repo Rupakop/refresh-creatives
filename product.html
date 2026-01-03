@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Velvet Verse</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-neutral-950 text-white">
+
+<header class="max-w-6xl mx-auto px-6 py-8 flex justify-between">
+  <a href="index.html">Refresh Elixir</a>
+  <a href="checkout.html" class="text-sm text-white/60">Cart</a>
+</header>
+
+<section class="max-w-6xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-14">
+
+  <div class="bg-neutral-100 rounded-3xl h-[480px]
+              flex items-center justify-center">
+    <img src="images/100ml.jpg"
+         class="max-h-[85%] object-contain">
+  </div>
+
+  <div class="space-y-6">
+    <h1 class="text-3xl font-bold">Velvet Verse</h1>
+    <p class="text-white/70">
+      Warm floral blend with soft powdery notes.
+    </p>
+
+    <div class="space-y-2">
+      <p>Select size</p>
+      <div class="flex gap-3">
+        <button data-size="10">10 ml</button>
+        <button data-size="20">20 ml</button>
+        <button data-size="30" class="active">30 ml</button>
+        <button data-size="60">60 ml</button>
+        <button data-size="100">100 ml</button>
+      </div>
+    </div>
+
+    <div class="text-2xl font-semibold">
+      ₹<span id="price">320</span>
+    </div>
+
+    <button id="addToCart"
+      class="bg-pink-600 w-full py-3 rounded-xl">
+      Add to Cart
+    </button>
+  </div>
+
+</section>
+
+<script>
+const PRICES = {10:99,20:199,30:320,60:499,100:749};
+let size = 30;
+
+document.querySelectorAll("[data-size]").forEach(btn=>{
+  btn.onclick=()=>{
+    size = Number(btn.dataset.size);
+    document.getElementById("price").textContent = PRICES[size];
+  };
+});
+
+document.getElementById("addToCart").onclick=()=>{
+  const cart = JSON.parse(localStorage.getItem("cart")||"[]");
+  cart.push({
+    name:"Velvet Verse",
+    size,
+    price:PRICES[size],
+    qty:1
+  });
+  localStorage.setItem("cart",JSON.stringify(cart));
+  location.href="checkout.html";
+};
+</script>
+
+</body>
+</html>
