@@ -4,69 +4,47 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Refresh Elixir – Inspired Perfumes</title>
-<meta name="description" content="Discover handcrafted perfumes inspired by timeless fragrances.">
+<meta name="description" content="Handcrafted perfume oils inspired by timeless fragrances.">
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="data.js"></script>
 </head>
 
 <body class="bg-neutral-950 text-white">
 
-<!-- HEADER -->
 <header class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
   <h1 class="text-xl font-semibold tracking-wide">Refresh Elixir</h1>
-  <a href="checkout.html" class="relative text-sm">
+  <a href="checkout.html" class="relative">
     Cart
-    <span id="cartCount"
-      class="absolute -top-2 -right-3 bg-pink-600 text-xs px-2 rounded-full">0</span>
+    <span id="cartCount" class="absolute -top-2 -right-3 bg-pink-600 text-xs px-2 rounded-full">0</span>
   </a>
 </header>
 
-<!-- HERO -->
-<section class="max-w-7xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-16 items-center">
-
-  <!-- TEXT -->
+<section class="max-w-7xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-16 items-center">
   <div class="space-y-6">
     <h2 class="text-4xl md:text-5xl font-bold leading-tight">
       Fragrances that<br/>leave a quiet mark
     </h2>
-
     <p class="text-white/70 max-w-md">
       Handcrafted perfume oils inspired by iconic scents.
-      Long-lasting, refined, and made for everyday elegance.
+      Designed for everyday elegance and lasting impression.
     </p>
-
-    <a href="#collection"
-       class="inline-block bg-pink-600 hover:bg-pink-700
-              px-6 py-3 rounded-xl font-medium">
+    <a href="#collection" class="inline-block bg-pink-600 px-6 py-3 rounded-xl font-medium">
       Explore Collection
     </a>
-
     <p class="text-xs text-white/40">
       *Inspired by reference only. Not affiliated with any brand.
     </p>
   </div>
 
-  <!-- IMAGE -->
-  <div class="bg-neutral-100 rounded-3xl h-[460px]
-              flex items-center justify-center">
-    <img src="images/100ml.jpg"
-         alt="Perfume bottle"
-         class="max-h-[85%] object-contain">
+  <div class="bg-neutral-100 rounded-3xl h-[460px] flex items-center justify-center">
+    <img src="images/100ml.jpg" class="max-h-[85%] object-contain">
   </div>
-
 </section>
 
-<!-- COLLECTION -->
 <section id="collection" class="max-w-7xl mx-auto px-6 py-20">
-
-  <div class="flex flex-wrap gap-4 items-center mb-10">
-    <h3 class="text-2xl font-semibold flex-1">Our Collection</h3>
-
-    <input id="search"
-      placeholder="Search fragrance…"
-      class="bg-neutral-900 px-4 py-2 rounded w-56">
-
-    <select id="filter"
-      class="bg-neutral-900 px-4 py-2 rounded">
+  <div class="flex flex-wrap gap-4 mb-10">
+    <input id="search" placeholder="Search fragrance…" class="bg-neutral-900 px-4 py-2 rounded w-56">
+    <select id="filter" class="bg-neutral-900 px-4 py-2 rounded">
       <option value="all">All</option>
       <option value="fresh">Fresh</option>
       <option value="musk">Musk</option>
@@ -76,30 +54,10 @@
     </select>
   </div>
 
-  <div id="perfumeGrid"
-    class="grid sm:grid-cols-2 md:grid-cols-3 gap-10"></div>
-
+  <div id="perfumeGrid" class="grid sm:grid-cols-2 md:grid-cols-3 gap-10"></div>
 </section>
 
-<!-- FOOTER -->
-<footer class="text-center py-10 text-white/40 text-sm">
-  © Refresh Elixir
-</footer>
-
 <script>
-const PERFUMES = [
- {id:1,name:"Velvet Verse",inspired:"Poem",type:"floral",desc:"Warm floral blend with soft powdery notes."},
- {id:2,name:"Pure Snow Musk",inspired:"White Musk",type:"musk",desc:"Clean airy musk with lasting freshness."},
- {id:3,name:"Midnight Dreamer",inspired:"Dream",type:"fresh",desc:"Light sweet freshness with calm aura."},
- {id:4,name:"Soft Dove Mist",inspired:"Dove",type:"fresh",desc:"Clean creamy soap-like comfort."},
- {id:5,name:"Golden Talon",inspired:"Golden Hawk",type:"woody",desc:"Sharp citrus opening with woody depth."},
- {id:6,name:"Midnight Charlie",inspired:"Charlie Black",type:"spicy",desc:"Warm spicy masculine scent."},
- {id:7,name:"Rider’s Edge",inspired:"Harley Davidson",type:"woody",desc:"Rugged smoky leathery vibe."},
- {id:8,name:"Crystal Musk",inspired:"White Jovan Musk",type:"musk",desc:"Fresh musky floral finish."},
- {id:9,name:"Open Breeze",inspired:"Open",type:"fresh",desc:"Green herbal freshness."},
- {id:10,name:"Brute Force",inspired:"Brut",type:"spicy",desc:"Classic barbershop fougère."}
-];
-
 const grid = document.getElementById("perfumeGrid");
 const search = document.getElementById("search");
 const filter = document.getElementById("filter");
@@ -109,31 +67,25 @@ function render() {
   const q = search.value.toLowerCase();
   const f = filter.value;
 
-  PERFUMES.filter(p =>
+  window.PERFUMES.filter(p =>
     (f === "all" || p.type === f) &&
     (p.name.toLowerCase().includes(q) || p.inspired.toLowerCase().includes(q))
   ).forEach(p => {
     grid.innerHTML += `
-      <div class="bg-neutral-900 rounded-2xl p-6 space-y-3
-                  hover:translate-y-[-4px] transition">
-        <h4 class="text-lg font-medium">${p.name}</h4>
+      <div class="bg-neutral-900 rounded-2xl p-6 space-y-3 hover:-translate-y-1 transition">
+        <h3 class="text-lg font-semibold">${p.name}</h3>
         <p class="text-xs text-white/60">Inspired by ${p.inspired}</p>
         <p class="text-sm text-white/70">${p.desc}</p>
-        <a href="product.html?id=${p.id}"
-           class="text-pink-400 text-sm">
-           View details →
-        </a>
-      </div>`;
+        <a href="product.html?id=${p.id}" class="text-pink-400 text-sm">View details →</a>
+      </div>
+    `;
   });
 }
-
 search.oninput = filter.onchange = render;
 render();
 
-// Cart badge
 const cart = JSON.parse(localStorage.getItem("cart")||"[]");
-document.getElementById("cartCount").textContent =
-  cart.reduce((s,i)=>s+i.qty,0);
+document.getElementById("cartCount").textContent = cart.reduce((s,i)=>s+i.qty,0);
 </script>
 
 </body>
