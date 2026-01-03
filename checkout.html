@@ -26,7 +26,7 @@
     </div>
   </div>
 
-  <!-- CUSTOMER DETAILS -->
+  <!-- DELIVERY DETAILS -->
   <div class="bg-neutral-900 rounded-2xl p-6 space-y-4">
     <h2 class="text-lg font-semibold">Delivery Details</h2>
     <input id="name" placeholder="Full Name" class="w-full bg-neutral-800 px-4 py-2 rounded">
@@ -44,28 +44,14 @@
       Pay via UPI
     </button>
 
-    <!-- FALLBACK -->
-    <div id="upiFallback" class="hidden text-center space-y-3 pt-4">
+    <!-- QR FOR DESKTOP -->
+    <div id="qrBox" class="hidden text-center space-y-3 pt-4">
       <p class="text-sm text-white/70">
-        If UPI app did not open, pay manually:
+        Scan QR with your phone to pay
       </p>
-
-      <!-- OPTIONAL QR (recommended) -->
-      <!-- Put upi-qr.png in root folder -->
-      <img src="upi-qr.png" alt="UPI QR"
-        class="mx-auto w-40 rounded bg-white p-2">
-
-      <div class="bg-neutral-800 px-4 py-2 rounded text-sm">
-        rupakmurkar41@oksbi
-      </div>
-
-      <button onclick="copyUpi()"
-        class="text-pink-400 text-sm">
-        Copy UPI ID
-      </button>
-
+      <img id="qrImg" class="mx-auto w-48 bg-white p-2 rounded">
       <p class="text-xs text-white/40">
-        After payment, your order will be confirmed manually.
+        Payment will open in your UPI app
       </p>
     </div>
   </div>
@@ -73,7 +59,14 @@
 </section>
 
 <script>
-/* ===== LOAD CART ===== */
+/* ================= CONFIG ================= */
+const SHEET_API_URL =
+  "https://script.google.com/macros/s/AKfycbyp54yVqUHWwTr5UXJom1688PRWsQNSeN3l9NqVYwCVqRYSKuOXMdh34b--lIR92Syk6g/exec";
+
+const UPI_ID = "rupakmurkar41@oksbi";
+const MERCHANT = "Refresh Elixir";
+
+/* ================= CART ================= */
 let cart = JSON.parse(localStorage.getItem("cart") || "[]");
 const cartEl = document.getElementById("cartItems");
 const totalEl = document.getElementById("total");
@@ -97,8 +90,8 @@ function renderCart() {
           <p class="text-xs text-white/60">${item.size} ml × ${item.qty}</p>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="updateQty(${i},-1)" class="px-2">−</button>
-          <button onclick="updateQty(${i},1)" class="px-2">+</button>
+          <button onclick="updateQty(${i},-1)">−</button>
+          <button onclick="updateQty(${i},1)">+</button>
           <button onclick="removeItem(${i})" class="text-red-400">✕</button>
         </div>
       </div>
@@ -111,23 +104,23 @@ function renderCart() {
 function updateQty(i, d) {
   cart[i].qty += d;
   if (cart[i].qty < 1) cart[i].qty = 1;
-  save();
+  saveCart();
 }
 
 function removeItem(i) {
   cart.splice(i, 1);
-  save();
+  saveCart();
 }
 
-function save() {
+function saveCart() {
   localStorage.setItem("cart", JSON.stringify(cart));
   renderCart();
 }
 
 renderCart();
 
-/* ===== UPI PAYMENT ===== */
-document.getElementById("payUpi").onclick = () => {
+/* ================= PAYMENT ================= */
+document.getElementById("payUpi").onclick = async () => {
   if (!cart.length) {
     alert("Cart is empty");
     return;
@@ -142,32 +135,46 @@ document.getElementById("payUpi").onclick = () => {
     return;
   }
 
-  const amount = totalEl.textContent;
-  const upiId = "rupakmurkar41@oksbi";
-  const merchant = "Refresh Elixir";
+  const order = {
+    name,
+    phone,
+    address,
+    items: cart,
+    amount: Number(totalEl.textContent)
+  };
 
-  const upiUrl =
-    `upi://pay?pa=${upiId}&pn=${encodeURIComponent(merchant)}&am=${amount}&cu=INR`;
+  try {
+    // SAVE ORDER TO GOOGLE SHEETS
+    const res = await fetch(SHEET_API_URL, {
+      method: "POST",
+      body: JSON.stringify(order)
+    });
 
-  const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+    if (!res.ok) {
+      alert("Failed to save order. Try again.");
+      return;
+    }
 
-  if (isMobile) {
-    window.location.href = upiUrl;
-    setTimeout(showFallback, 1500);
-  } else {
-    showFallback();
+    // OPEN PAYMENT
+    const upiUrl =
+      `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(MERCHANT)}&am=${order.amount}&cu=INR`;
+
+    const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      window.location.href = upiUrl;
+    } else {
+      document.getElementById("qrImg").src =
+        `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiUrl)}`;
+      document.getElementById("qrBox").classList.remove("hidden");
+    }
+
+  } catch (err) {
+    alert("Network error. Please try again.");
   }
 };
-
-function showFallback() {
-  document.getElementById("upiFallback").classList.remove("hidden");
-}
-
-function copyUpi() {
-  navigator.clipboard.writeText("rupakmurkar41@oksbi");
-  alert("UPI ID copied");
-}
 </script>
 
 </body>
 </html>
+
