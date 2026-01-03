@@ -29,8 +29,10 @@
   <!-- DELIVERY DETAILS -->
   <div class="bg-neutral-900 rounded-2xl p-6 space-y-4">
     <h2 class="text-lg font-semibold">Delivery Details</h2>
-    <input id="name" placeholder="Full Name" class="w-full bg-neutral-800 px-4 py-2 rounded">
-    <input id="phone" placeholder="Phone Number" class="w-full bg-neutral-800 px-4 py-2 rounded">
+    <input id="name" placeholder="Full Name"
+      class="w-full bg-neutral-800 px-4 py-2 rounded">
+    <input id="phone" placeholder="Phone Number"
+      class="w-full bg-neutral-800 px-4 py-2 rounded">
     <textarea id="address" placeholder="Full Address"
       class="w-full bg-neutral-800 px-4 py-2 rounded"></textarea>
   </div>
@@ -44,7 +46,7 @@
       Pay via UPI
     </button>
 
-    <!-- QR FOR DESKTOP -->
+    <!-- DESKTOP QR -->
     <div id="qrBox" class="hidden text-center space-y-3 pt-4">
       <p class="text-sm text-white/70">
         Scan QR with your phone to pay
@@ -147,6 +149,9 @@ document.getElementById("payUpi").onclick = async () => {
     // SAVE ORDER TO GOOGLE SHEETS
     const res = await fetch(SHEET_API_URL, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify(order)
     });
 
@@ -170,6 +175,7 @@ document.getElementById("payUpi").onclick = async () => {
     }
 
   } catch (err) {
+    console.error(err);
     alert("Network error. Please try again.");
   }
 };
@@ -177,4 +183,3 @@ document.getElementById("payUpi").onclick = async () => {
 
 </body>
 </html>
-
