@@ -3,38 +3,71 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Refresh Elixir – Handcrafted Inspired Perfumes</title>
-<meta name="description" content="Discover handcrafted perfume oils inspired by popular fragrances. Long lasting, affordable, and made for everyday wear.">
+<title>Refresh Elixir – Inspired Perfumes</title>
+<meta name="description" content="Discover handcrafted perfume oils inspired by timeless fragrances.">
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-neutral-950 text-white">
 
+<!-- HEADER -->
 <header class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
-  <h1 class="text-xl font-semibold">Refresh Elixir</h1>
-  <a href="checkout.html" class="relative">
+  <h1 class="text-xl font-semibold tracking-wide">Refresh Elixir</h1>
+  <a href="checkout.html" class="relative text-sm">
     Cart
     <span id="cartCount"
       class="absolute -top-2 -right-3 bg-pink-600 text-xs px-2 rounded-full">0</span>
   </a>
 </header>
 
-<section class="max-w-7xl mx-auto px-6 py-10 space-y-6">
+<!-- HERO -->
+<section class="max-w-7xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-16 items-center">
 
-  <p class="text-white/70 max-w-2xl">
-    Handcrafted perfume oils inspired by well-known fragrances.
-    <span class="text-xs block mt-1">
-      *We are not affiliated with any designer brand.
-    </span>
-  </p>
+  <!-- TEXT -->
+  <div class="space-y-6">
+    <h2 class="text-4xl md:text-5xl font-bold leading-tight">
+      Fragrances that<br/>leave a quiet mark
+    </h2>
 
-  <!-- SEARCH + FILTER -->
-  <div class="flex flex-wrap gap-4">
-    <input id="search" placeholder="Search fragrance..."
-      class="bg-neutral-900 px-4 py-2 rounded w-60">
+    <p class="text-white/70 max-w-md">
+      Handcrafted perfume oils inspired by iconic scents.
+      Long-lasting, refined, and made for everyday elegance.
+    </p>
 
-    <select id="filter" class="bg-neutral-900 px-4 py-2 rounded">
-      <option value="all">All types</option>
+    <a href="#collection"
+       class="inline-block bg-pink-600 hover:bg-pink-700
+              px-6 py-3 rounded-xl font-medium">
+      Explore Collection
+    </a>
+
+    <p class="text-xs text-white/40">
+      *Inspired by reference only. Not affiliated with any brand.
+    </p>
+  </div>
+
+  <!-- IMAGE -->
+  <div class="bg-neutral-100 rounded-3xl h-[460px]
+              flex items-center justify-center">
+    <img src="images/100ml.jpg"
+         alt="Perfume bottle"
+         class="max-h-[85%] object-contain">
+  </div>
+
+</section>
+
+<!-- COLLECTION -->
+<section id="collection" class="max-w-7xl mx-auto px-6 py-20">
+
+  <div class="flex flex-wrap gap-4 items-center mb-10">
+    <h3 class="text-2xl font-semibold flex-1">Our Collection</h3>
+
+    <input id="search"
+      placeholder="Search fragrance…"
+      class="bg-neutral-900 px-4 py-2 rounded w-56">
+
+    <select id="filter"
+      class="bg-neutral-900 px-4 py-2 rounded">
+      <option value="all">All</option>
       <option value="fresh">Fresh</option>
       <option value="musk">Musk</option>
       <option value="floral">Floral</option>
@@ -44,8 +77,14 @@
   </div>
 
   <div id="perfumeGrid"
-    class="grid sm:grid-cols-2 md:grid-cols-3 gap-8 mt-8"></div>
+    class="grid sm:grid-cols-2 md:grid-cols-3 gap-10"></div>
+
 </section>
+
+<!-- FOOTER -->
+<footer class="text-center py-10 text-white/40 text-sm">
+  © Refresh Elixir
+</footer>
 
 <script>
 const PERFUMES = [
@@ -75,12 +114,15 @@ function render() {
     (p.name.toLowerCase().includes(q) || p.inspired.toLowerCase().includes(q))
   ).forEach(p => {
     grid.innerHTML += `
-      <div class="bg-neutral-900 rounded-2xl p-6 space-y-2">
-        <h3 class="text-lg font-semibold">${p.name}</h3>
+      <div class="bg-neutral-900 rounded-2xl p-6 space-y-3
+                  hover:translate-y-[-4px] transition">
+        <h4 class="text-lg font-medium">${p.name}</h4>
         <p class="text-xs text-white/60">Inspired by ${p.inspired}</p>
         <p class="text-sm text-white/70">${p.desc}</p>
         <a href="product.html?id=${p.id}"
-           class="text-pink-400 text-sm">View details →</a>
+           class="text-pink-400 text-sm">
+           View details →
+        </a>
       </div>`;
   });
 }
@@ -88,15 +130,11 @@ function render() {
 search.oninput = filter.onchange = render;
 render();
 
-// CART BADGE
-function updateCartCount(){
-  const cart = JSON.parse(localStorage.getItem("cart")||"[]");
-  document.getElementById("cartCount").textContent =
-    cart.reduce((s,i)=>s+i.qty,0);
-}
-updateCartCount();
+// Cart badge
+const cart = JSON.parse(localStorage.getItem("cart")||"[]");
+document.getElementById("cartCount").textContent =
+  cart.reduce((s,i)=>s+i.qty,0);
 </script>
 
 </body>
 </html>
-
