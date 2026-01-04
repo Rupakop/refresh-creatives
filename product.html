@@ -10,9 +10,17 @@
 <body class="bg-neutral-950 text-white">
 
 <!-- HEADER -->
-<header class="max-w-6xl mx-auto px-6 py-6">
+<header class="max-w-6xl mx-auto px-6 py-6 space-y-2">
   <h1 class="text-3xl font-bold">Perfume Collection</h1>
-  <p class="text-white/60 mt-1">Explore our signature fragrances</p>
+  <p class="text-white/60">Explore our signature fragrances</p>
+
+  <!-- SEARCH -->
+  <input
+    id="searchInput"
+    type="text"
+    placeholder="Search perfume name..."
+    class="w-full mt-3 px-4 py-2 rounded bg-neutral-800 text-white outline-none"
+  />
 </header>
 
 <!-- CATEGORY FILTERS -->
@@ -47,12 +55,15 @@ import { PRODUCTS } from "./data.js";
 
 const grid = document.getElementById("productsGrid");
 const buttons = document.querySelectorAll(".cat-btn");
+const searchInput = document.getElementById("searchInput");
 
-/* ---------- RENDER ---------- */
+let activeCategory = "ALL";
+
+/* RENDER */
 function renderProducts(list) {
   grid.innerHTML = "";
 
-  if (!list || list.length === 0) {
+  if (list.length === 0) {
     grid.innerHTML =
       "<p class='text-white/60'>No perfumes found.</p>";
     return;
@@ -91,23 +102,40 @@ function renderProducts(list) {
   });
 }
 
-/* ---------- FILTER ---------- */
+/* APPLY FILTERS */
+function applyFilters() {
+  const query = searchInput.value.toLowerCase();
+
+  let filtered = PRODUCTS;
+
+  if (activeCategory !== "ALL") {
+    filtered = filtered.filter(p => p.category === activeCategory);
+  }
+
+  if (query) {
+    filtered = filtered.filter(p =>
+      p.name.toLowerCase().includes(query)
+    );
+  }
+
+  renderProducts(filtered);
+}
+
+/* CATEGORY CLICK */
 buttons.forEach(btn => {
   btn.addEventListener("click", () => {
     buttons.forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
 
-    const cat = btn.dataset.cat;
-    renderProducts(
-      cat === "ALL"
-        ? PRODUCTS
-        : PRODUCTS.filter(p => p.category === cat)
-    );
+    activeCategory = btn.dataset.cat;
+    applyFilters();
   });
 });
 
-/* ---------- IMPORTANT FIX ---------- */
-/* Always render ALL perfumes on page load */
+/* SEARCH INPUT */
+searchInput.addEventListener("input", applyFilters);
+
+/* INITIAL LOAD */
 window.addEventListener("DOMContentLoaded", () => {
   renderProducts(PRODUCTS);
 });
@@ -127,3 +155,4 @@ window.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
