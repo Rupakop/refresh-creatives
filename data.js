@@ -1,42 +1,146 @@
 export const PRODUCTS = [
-  { id:1, name:"Velvet Verse", inspired:"Poem", category:"Floral" },
-  { id:2, name:"Pure Snow Musk", inspired:"White Musk", category:"Musk" },
-  { id:3, name:"Midnight Dreamer", inspired:"Dream", category:"Sweet" },
-  { id:4, name:"Soft Dove Mist", inspired:"Dove", category:"Fresh" },
-  { id:5, name:"Golden Talon", inspired:"Golden Hawk", category:"Woody" },
-  { id:6, name:"Midnight Charlie", inspired:"Charlie Black", category:"Spicy" },
-  { id:7, name:"Rider’s Edge", inspired:"Harley Davidson", category:"Leather" },
-  { id:8, name:"Crystal Musk", inspired:"White Jovan Musk", category:"Musk" },
-  { id:9, name:"Open Breeze", inspired:"Open", category:"Fresh" },
-  { id:10, name:"Brute Force", inspired:"Brut", category:"Fougere" },
-  { id:11, name:"Snow Nevia", inspired:"Nevia", category:"Creamy" },
-  { id:12, name:"Royal Mirage Essence", inspired:"Royal Mirage", category:"Floral" },
-  { id:13, name:"Solo Legend", inspired:"One Man Show", category:"Woody" },
-  { id:14, name:"Havoc Storm", inspired:"Havoc", category:"Fresh" },
-  { id:15, name:"Urban Hugo", inspired:"Hugo", category:"Green" },
-  { id:16, name:"Sweet Aura", inspired:"Sweet Heart", category:"Floral" },
-  { id:17, name:"Mars Fire", inspired:"Mars", category:"Spicy" },
-  { id:18, name:"Cobra Strike", inspired:"Cobra", category:"Spicy" },
-  { id:19, name:"Inferno Wood", inspired:"Fahrenheit", category:"Leather" },
-  { id:20, name:"Ocean Attar Mist", inspired:"Sea Seven Attarful", category:"Aquatic" },
-  { id:21, name:"Azure Seven", inspired:"Sea Seven", category:"Aquatic" },
-  { id:22, name:"Fresh Ponds Mist", inspired:"Ponds", category:"Powdery" },
-  { id:23, name:"Blue Velvet Lady", inspired:"Blue Lady", category:"Floral" },
-  { id:24, name:"Paso Legend", inspired:"El Paso", category:"Woody" },
-  { id:25, name:"Kewda Bloom", inspired:"Kevda", category:"Floral" },
-  { id:26, name:"Bold Belle", inspired:"Good Girl", category:"Sweet" },
-  { id:27, name:"Nice Breeze", inspired:"Nice", category:"Fresh" },
-  { id:28, name:"Lomani Noir", inspired:"Lomani", category:"Woody" },
-  { id:29, name:"Night Drakkar", inspired:"Drakkar Noir", category:"Fougere" },
-  { id:30, name:"Aqua Wave", inspired:"Cool Water", category:"Aquatic" },
-  { id:31, name:"Scarlet Charlie", inspired:"Charlie Red", category:"Floral" },
-  { id:32, name:"Sport Breeze", inspired:"Polo Sport", category:"Fresh" },
-  { id:33, name:"Blue Charge", inspired:"Blue Challenge", category:"Fresh" },
-  { id:34, name:"London Snow", inspired:"White London", category:"Citrus" },
-  { id:35, name:"Ocean Drift", inspired:"Cool Water", category:"Aquatic" },
-  { id:36, name:"Aqua Royale", inspired:"Aqua", category:"Aquatic" },
-  { id:37, name:"Future Omen", inspired:"Prophecy", category:"Woody" },
-  { id:38, name:"Zatak Edge", inspired:"Zatak", category:"Spicy" },
-  { id:39, name:"Azure Desire", inspired:"Most Wanted (Azzure)", category:"Sweet" },
-  { id:40, name:"Flora Bloom", inspired:"Gucci Flora", category:"Floral" }
+  {
+    id: 1,
+    name: "Velvet Verse",
+    character: "Romantic, soft, elegant",
+    scentProfile: "Warm floral with powdery notes",
+    occasion: "Daily wear, evenings",
+    category: "Floral"
+  },
+  {
+    id: 2,
+    name: "Pure Snow Musk",
+    character: "Clean, calm, comforting",
+    scentProfile: "Soft white musk, airy and fresh",
+    occasion: "Daily wear",
+    category: "Musk"
+  },
+  {
+    id: 3,
+    name: "Midnight Dreamer",
+    character: "Smooth, dreamy, relaxing",
+    scentProfile: "Light sweetness with musky base",
+    occasion: "Night wear",
+    category: "Sweet"
+  },
+  {
+    id: 4,
+    name: "Soft Dove Mist",
+    character: "Clean, soothing, gentle",
+    scentProfile: "Creamy soap-like freshness",
+    occasion: "Everyday comfort",
+    category: "Fresh"
+  },
+  {
+    id: 5,
+    name: "Golden Talon",
+    character: "Bold, masculine, confident",
+    scentProfile: "Citrus opening with woody base",
+    occasion: "Office, outings",
+    category: "Woody"
+  },
+  {
+    id: 6,
+    name: "Midnight Charlie",
+    character: "Strong, spicy, charismatic",
+    scentProfile: "Warm spices with aromatic notes",
+    occasion: "Night wear",
+    category: "Spicy"
+  },
+  {
+    id: 7,
+    name: "Rider’s Edge",
+    character: "Rugged, adventurous",
+    scentProfile: "Leather, smoke, woods",
+    occasion: "Outdoor, night",
+    category: "Leather"
+  },
+  {
+    id: 20,
+    name: "Ocean Attar Mist",
+    character: "Cool, breezy, refreshing",
+    scentProfile: "Salty aquatic freshness",
+    occasion: "Summer, daytime",
+    category: "Aquatic"
+  },
+  {
+    id: 21,
+    name: "Azure Seven",
+    character: "Clean, modern, airy",
+    scentProfile: "Fresh oceanic notes",
+    occasion: "Daily wear",
+    category: "Aquatic"
+  },
+  {
+    id: 30,
+    name: "Aqua Wave",
+    character: "Energetic, sporty",
+    scentProfile: "Mint, lavender, marine notes",
+    occasion: "Gym, daytime",
+    category: "Aquatic"
+  },
+  {
+    id: 35,
+    name: "Ocean Drift",
+    character: "Relaxed, coastal",
+    scentProfile: "Fresh aquatic with mint",
+    occasion: "Casual wear",
+    category: "Aquatic"
+  },
+  {
+    id: 36,
+    name: "Aqua Royale",
+    character: "Luxurious, fresh",
+    scentProfile: "Clean aquatic with smooth base",
+    occasion: "Premium daily wear",
+    category: "Aquatic"
+  },
+  {
+    id: 23,
+    name: "Blue Velvet Lady",
+    character: "Soft, feminine",
+    scentProfile: "Floral fruity sweetness",
+    occasion: "Daily wear",
+    category: "Floral"
+  },
+  {
+    id: 26,
+    name: "Bold Belle",
+    character: "Sensual, confident",
+    scentProfile: "Sweet floral with cocoa",
+    occasion: "Evenings, parties",
+    category: "Sweet"
+  },
+  {
+    id: 40,
+    name: "Flora Bloom",
+    character: "Elegant, graceful",
+    scentProfile: "White florals with soft sweetness",
+    occasion: "Day & evening",
+    category: "Floral"
+  },
+  {
+    id: 37,
+    name: "Future Omen",
+    character: "Mysterious, modern",
+    scentProfile: "Woody aromatic blend",
+    occasion: "Night wear",
+    category: "Woody"
+  },
+  {
+    id: 38,
+    name: "Zatak Edge",
+    character: "Sharp, intense",
+    scentProfile: "Spicy woody punch",
+    occasion: "Evenings",
+    category: "Spicy"
+  },
+  {
+    id: 39,
+    name: "Azure Desire",
+    character: "Seductive, bold",
+    scentProfile: "Sweet aromatic freshness",
+    occasion: "Dates, night",
+    category: "Sweet"
+  }
 ];
