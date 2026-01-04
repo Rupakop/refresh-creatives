@@ -1,87 +1,39 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="data.js"></script>
-</head>
+<script type="module">
+import { PRODUCTS } from "./data.js";
 
-<body class="bg-neutral-950 text-white">
+const grid = document.getElementById("productsGrid");
+grid.innerHTML = "";
 
-<header class="max-w-6xl mx-auto px-6 py-6 flex justify-between">
-  <a href="index.html">← Back</a>
-  <a href="checkout.html">Cart</a>
-</header>
+PRODUCTS.forEach(p => {
+  const card = document.createElement("div");
+  card.className =
+    "bg-white text-black rounded-xl p-5 shadow space-y-3";
 
-<section class="max-w-6xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-14">
-  <div class="bg-neutral-100 rounded-3xl h-[480px] flex items-center justify-center">
-    <img id="productImage" class="max-h-[85%] object-contain">
-  </div>
-
-  <div class="space-y-5">
-    <h1 id="name" class="text-3xl font-bold"></h1>
-    <p id="inspired" class="text-pink-400 text-sm"></p>
-    <p id="desc" class="text-white/70"></p>
-
-    <div class="flex gap-3 flex-wrap">
-      <button data-s="10">10 ml</button>
-      <button data-s="20">20 ml</button>
-      <button data-s="30" class="active">30 ml</button>
-      <button data-s="60">60 ml</button>
-      <button data-s="100">100 ml</button>
+  card.innerHTML = `
+    <div class="flex justify-between items-start">
+      <h3 class="text-lg font-semibold">${p.name}</h3>
+      <span class="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded">
+        ${p.category}
+      </span>
     </div>
 
-    <div class="text-2xl font-semibold">₹<span id="price"></span></div>
+    <details class="mt-2">
+      <summary class="cursor-pointer text-sm font-medium">
+        Perfume Profile
+      </summary>
+      <div class="mt-2 text-sm text-gray-700 space-y-1">
+        <p><strong>Character:</strong> ${p.character}</p>
+        <p><strong>Scent:</strong> ${p.scentProfile}</p>
+        <p><strong>Best for:</strong> ${p.occasion}</p>
+      </div>
+    </details>
 
-    <button id="add" class="bg-pink-600 w-full py-3 rounded-xl">Add to cart</button>
+    <button class="mt-3 w-full bg-pink-600 hover:bg-pink-700 text-white py-2 rounded">
+      Add to Cart
+    </button>
+  `;
 
-    <p class="text-xs text-white/40">
-      *Inspired by reference only. Not affiliated with any brand.
-    </p>
-  </div>
-</section>
-
-<script>
-const SIZES = {
- 10:{price:99,image:"images/10ml.jpg"},
- 20:{price:199,image:"images/20ml.jpg"},
- 30:{price:320,image:"images/30ml.jpg"},
- 60:{price:499,image:"images/60ml.jpg"},
-100:{price:749,image:"images/100ml.jpg"}
-};
-
-const id = Number(new URLSearchParams(location.search).get("id"));
-const perfume = window.PERFUMES.find(p=>p.id===id);
-
-document.getElementById("name").textContent = perfume.name;
-document.getElementById("inspired").textContent = "Inspired by " + perfume.inspired;
-document.getElementById("desc").textContent = perfume.desc;
-document.title = perfume.name + " – Refresh Elixir";
-
-let size = 30;
-const img = document.getElementById("productImage");
-const price = document.getElementById("price");
-img.src = SIZES[size].image;
-price.textContent = SIZES[size].price;
-
-document.querySelectorAll("[data-s]").forEach(b=>{
-  b.onclick=()=>{
-    size = +b.dataset.s;
-    img.src = SIZES[size].image;
-    price.textContent = SIZES[size].price;
-  };
+  grid.appendChild(card);
 });
-
-document.getElementById("add").onclick=()=>{
-  const cart = JSON.parse(localStorage.getItem("cart")||"[]");
-  const ex = cart.find(i=>i.id===perfume.id && i.size===size);
-  ex ? ex.qty++ : cart.push({id:perfume.id,name:perfume.name,size,price:SIZES[size].price,qty:1});
-  localStorage.setItem("cart",JSON.stringify(cart));
-  location.href="checkout.html";
-};
 </script>
-
-</body>
-</html>
 
