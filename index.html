@@ -1,70 +1,63 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="utf-8" />
   <title>Refresh Elixir</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-
-<body class="bg-neutral-950 text-white">
+<body class="bg-black text-white">
 
 <!-- HERO -->
-<section class="max-w-6xl mx-auto px-6 py-28 text-center">
-  <h1 class="text-5xl font-semibold tracking-wide">Refresh Elixir</h1>
-  <p class="text-white/60 mt-5 max-w-xl mx-auto">
-    A refined perfume collection crafted for presence, mood, and memory.
-  </p>
-
-  <a
-    href="products.html"
-    class="inline-block mt-8 bg-pink-600 hover:bg-pink-700 px-6 py-3 rounded-full text-sm tracking-wide"
-  >
-    Explore Collection
-  </a>
+<section class="relative h-[90vh] flex items-center justify-center">
+  <img src="images/100ml.jpg" class="absolute inset-0 w-full h-full object-cover opacity-40">
+  <div class="relative text-center">
+    <h1 class="text-5xl font-bold">Refresh Elixir</h1>
+    <p class="mt-4 text-white/70">Premium perfumes for every mood</p>
+    <a href="products.html" class="inline-block mt-6 bg-pink-600 px-6 py-3 rounded">
+      Explore Collection
+    </a>
+  </div>
 </section>
 
 <!-- BEST SELLERS -->
-<section class="max-w-6xl mx-auto px-6 pb-24">
-  <h2 class="text-2xl font-light tracking-wide mb-10">
-    Best Sellers
-  </h2>
-
-  <div
-    id="bestSellerGrid"
-    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8"
-  ></div>
+<section class="max-w-6xl mx-auto px-6 py-20">
+  <h2 class="text-2xl mb-8">Best Sellers</h2>
+  <div id="grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
 </section>
 
 <script type="module">
-import { PRODUCTS } from "./data.js";
+import { PRODUCTS, SIZES } from "./data.js";
 
-/* 🔒 FINAL BEST SELLERS (FROM YOUR GREEN LIST) */
-const BEST_SELLER_IDS = [
-  1, 10, 12, 16, 17, 18, 19, 21, 23, 29, 32, 33, 38, 39
-];
+const BEST = [1,10,12,16,17,18,19,21,23,29,32,33,38,39];
+const grid = document.getElementById("grid");
 
-const grid = document.getElementById("bestSellerGrid");
+function addToCart(p, size) {
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  const item = cart.find(i => i.id===p.id && i.ml===size.ml);
+  if (item) item.qty++;
+  else cart.push({ id:p.id, name:p.name, ml:size.ml, price:size.price, qty:1 });
+  localStorage.setItem("cart", JSON.stringify(cart));
+  location.href = "checkout.html";
+}
 
-PRODUCTS
-  .filter(p => BEST_SELLER_IDS.includes(p.id))
-  .forEach(p => {
-    const card = document.createElement("div");
-    card.className =
-      "border border-white/10 rounded-2xl p-6 hover:border-pink-500 transition";
-
-    card.innerHTML = `
-      <h3 class="text-lg font-medium">${p.name}</h3>
-      <p class="text-sm text-white/60 mt-2">${p.scentProfile}</p>
-      <span class="inline-block mt-4 text-xs tracking-wide text-pink-500">
-        BEST SELLER
-      </span>
-    `;
-
-    grid.appendChild(card);
-  });
+PRODUCTS.filter(p=>BEST.includes(p.id)).forEach(p=>{
+  let size = SIZES[2];
+  const div = document.createElement("div");
+  div.className="border border-white/10 p-6 rounded";
+  div.innerHTML=`
+    <img src="${size.image}" class="h-40 mx-auto mb-4" />
+    <h3>${p.name}</h3>
+    <select class="bg-black border mt-2 w-full">
+      ${SIZES.map(s=>`<option value="${s.ml}">${s.ml}ml – ₹${s.price}</option>`).join("")}
+    </select>
+    <button class="mt-4 bg-pink-600 w-full py-2 rounded">Buy Now</button>
+  `;
+  const img=div.querySelector("img");
+  const sel=div.querySelector("select");
+  sel.onchange=()=>{ size=SIZES.find(s=>s.ml==sel.value); img.src=size.image; };
+  div.querySelector("button").onclick=()=>addToCart(p,size);
+  grid.appendChild(div);
+});
 </script>
 
 </body>
 </html>
-
