@@ -1,29 +1,33 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   <title>Perfume Collection – Refresh Elixir</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-neutral-950 text-white">
 
 <!-- HEADER -->
-<header class="max-w-6xl mx-auto px-6 py-6 space-y-2">
+<header class="max-w-6xl mx-auto px-6 py-8">
   <h1 class="text-3xl font-bold">Perfume Collection</h1>
-  <p class="text-white/60">Explore our signature fragrances</p>
-
-  <!-- SEARCH -->
-  <input
-    id="searchInput"
-    type="text"
-    placeholder="Search perfume name..."
-    class="w-full mt-3 px-4 py-2 rounded bg-neutral-800 text-white outline-none"
-  />
+  <p class="text-white/60 mt-1">
+    Explore our signature fragrances
+  </p>
 </header>
 
-<!-- CATEGORY FILTERS -->
+<!-- BEST SELLERS -->
+<section class="max-w-6xl mx-auto px-6 pb-12">
+  <h2 class="text-2xl font-semibold mb-4">Best Sellers</h2>
+
+  <div
+    id="bestSellerGrid"
+    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
+  ></div>
+</section>
+
+<!-- CATEGORY FILTER -->
 <section class="max-w-6xl mx-auto px-6 pb-6">
   <div class="flex flex-wrap gap-3">
     <button class="cat-btn active" data-cat="ALL">All</button>
@@ -34,16 +38,11 @@
     <button class="cat-btn" data-cat="Woody">Woody</button>
     <button class="cat-btn" data-cat="Spicy">Spicy</button>
     <button class="cat-btn" data-cat="Sweet">Sweet</button>
-    <button class="cat-btn" data-cat="Powdery">Powdery</button>
-    <button class="cat-btn" data-cat="Leather">Leather</button>
-    <button class="cat-btn" data-cat="Citrus">Citrus</button>
-    <button class="cat-btn" data-cat="Fougere">Fougere</button>
-    <button class="cat-btn" data-cat="Green">Green</button>
   </div>
 </section>
 
-<!-- PRODUCTS GRID -->
-<section class="max-w-6xl mx-auto px-6 pb-16">
+<!-- ALL PRODUCTS -->
+<section class="max-w-6xl mx-auto px-6 pb-20">
   <div
     id="productsGrid"
     class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
@@ -53,90 +52,101 @@
 <script type="module">
 import { PRODUCTS } from "./data.js";
 
-const grid = document.getElementById("productsGrid");
+/* ---------- CONFIG ---------- */
+/* Choose best sellers by ID here */
+const BEST_SELLER_IDS = [1, 2, 5, 12, 20, 36];
+
+/* ---------- DOM ---------- */
+const bestGrid = document.getElementById("bestSellerGrid");
+const productsGrid = document.getElementById("productsGrid");
 const buttons = document.querySelectorAll(".cat-btn");
-const searchInput = document.getElementById("searchInput");
 
-let activeCategory = "ALL";
+/* ---------- CARD TEMPLATE ---------- */
+function createCard(p, badgeText = null) {
+  const card = document.createElement("div");
+  card.className =
+    "bg-white text-black rounded-xl p-5 shadow space-y-3";
 
-/* RENDER */
+  card.innerHTML = `
+    <div class="flex justify-between items-start">
+      <h3 class="text-lg font-semibold">${p.name}</h3>
+      <span class="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded">
+        ${p.category}
+      </span>
+    </div>
+
+    ${
+      badgeText
+        ? `<span class="inline-block text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">${badgeText}</span>`
+        : ""
+    }
+
+    <p class="text-sm text-gray-700">
+      <strong>Character:</strong> ${p.character}
+    </p>
+
+    <p class="text-sm text-gray-700">
+      <strong>Scent:</strong> ${p.scentProfile}
+    </p>
+
+    <p class="text-sm text-gray-700">
+      <strong>Best for:</strong> ${p.occasion}
+    </p>
+
+    <button class="mt-3 w-full bg-pink-600 hover:bg-pink-700 text-white py-2 rounded">
+      Add to Cart
+    </button>
+  `;
+
+  return card;
+}
+
+/* ---------- RENDER BEST SELLERS ---------- */
+function renderBestSellers() {
+  bestGrid.innerHTML = "";
+
+  const bestSellers = PRODUCTS.filter(p =>
+    BEST_SELLER_IDS.includes(p.id)
+  );
+
+  bestSellers.forEach(p => {
+    bestGrid.appendChild(createCard(p, "Best Seller"));
+  });
+}
+
+/* ---------- RENDER PRODUCTS ---------- */
 function renderProducts(list) {
-  grid.innerHTML = "";
+  productsGrid.innerHTML = "";
 
-  if (list.length === 0) {
-    grid.innerHTML =
+  if (!list.length) {
+    productsGrid.innerHTML =
       "<p class='text-white/60'>No perfumes found.</p>";
     return;
   }
 
   list.forEach(p => {
-    const card = document.createElement("div");
-    card.className =
-      "bg-white text-black rounded-xl p-5 shadow space-y-3";
-
-    card.innerHTML = `
-      <div class="flex justify-between items-start">
-        <h3 class="text-lg font-semibold">${p.name}</h3>
-        <span class="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded">
-          ${p.category}
-        </span>
-      </div>
-
-      <details>
-        <summary class="cursor-pointer text-sm font-medium">
-          Perfume Profile
-        </summary>
-        <div class="mt-2 text-sm text-gray-700 space-y-1">
-          <p><strong>Character:</strong> ${p.character}</p>
-          <p><strong>Scent:</strong> ${p.scentProfile}</p>
-          <p><strong>Best for:</strong> ${p.occasion}</p>
-        </div>
-      </details>
-
-      <button class="mt-3 w-full bg-pink-600 hover:bg-pink-700 text-white py-2 rounded">
-        Add to Cart
-      </button>
-    `;
-
-    grid.appendChild(card);
+    productsGrid.appendChild(createCard(p));
   });
 }
 
-/* APPLY FILTERS */
-function applyFilters() {
-  const query = searchInput.value.toLowerCase();
-
-  let filtered = PRODUCTS;
-
-  if (activeCategory !== "ALL") {
-    filtered = filtered.filter(p => p.category === activeCategory);
-  }
-
-  if (query) {
-    filtered = filtered.filter(p =>
-      p.name.toLowerCase().includes(query)
-    );
-  }
-
-  renderProducts(filtered);
-}
-
-/* CATEGORY CLICK */
+/* ---------- CATEGORY FILTER ---------- */
 buttons.forEach(btn => {
   btn.addEventListener("click", () => {
     buttons.forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
 
-    activeCategory = btn.dataset.cat;
-    applyFilters();
+    const cat = btn.dataset.cat;
+    renderProducts(
+      cat === "ALL"
+        ? PRODUCTS
+        : PRODUCTS.filter(p => p.category === cat)
+    );
   });
 });
 
-/* SEARCH INPUT */
-searchInput.addEventListener("input", applyFilters);
-
-/* INITIAL LOAD */
+/* ---------- INITIAL LOAD ---------- */
 window.addEventListener("DOMContentLoaded", () => {
+  renderBestSellers();
   renderProducts(PRODUCTS);
 });
 </script>
