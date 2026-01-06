@@ -10,36 +10,36 @@
 <body class="bg-neutral-950 text-white">
 
 <!-- HERO -->
-<section class="max-w-6xl mx-auto px-6 py-20 text-center">
-  <h1 class="text-4xl font-bold">Refresh Elixir</h1>
-  <p class="text-white/60 mt-3">
-    Signature perfumes crafted for every mood
+<section class="max-w-6xl mx-auto px-6 py-28 text-center">
+  <h1 class="text-5xl font-semibold tracking-wide">Refresh Elixir</h1>
+  <p class="text-white/60 mt-5 max-w-xl mx-auto">
+    A refined perfume collection crafted for presence, mood, and memory.
   </p>
+
+  <a
+    href="products.html"
+    class="inline-block mt-8 bg-pink-600 hover:bg-pink-700 px-6 py-3 rounded-full text-sm tracking-wide"
+  >
+    Explore Collection
+  </a>
 </section>
 
-<!-- BEST SELLERS MINI SECTION -->
-<section class="max-w-6xl mx-auto px-6 pb-16">
-  <div class="flex justify-between items-center mb-6">
-    <h2 class="text-2xl font-semibold">Best Sellers</h2>
-
-    <a
-      href="products.html"
-      class="bg-pink-600 hover:bg-pink-700 px-4 py-2 rounded text-sm"
-    >
-      Explore Collection
-    </a>
-  </div>
+<!-- BEST SELLERS -->
+<section class="max-w-6xl mx-auto px-6 pb-24">
+  <h2 class="text-2xl font-light tracking-wide mb-10">
+    Best Sellers
+  </h2>
 
   <div
     id="bestSellerGrid"
-    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
+    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8"
   ></div>
 </section>
 
 <script type="module">
 import { PRODUCTS } from "./data.js";
 
-/* 🔒 LOCKED BEST SELLERS (FROM YOUR EXCEL) */
+/* 🔒 FINAL BEST SELLERS (FROM YOUR GREEN LIST) */
 const BEST_SELLER_IDS = [
   1, 10, 12, 16, 17, 18, 19, 21, 23, 29, 32, 33, 38, 39
 ];
@@ -51,13 +51,13 @@ PRODUCTS
   .forEach(p => {
     const card = document.createElement("div");
     card.className =
-      "bg-white text-black rounded-xl p-5 shadow space-y-2";
+      "border border-white/10 rounded-2xl p-6 hover:border-pink-500 transition";
 
     card.innerHTML = `
-      <h3 class="text-lg font-semibold">${p.name}</h3>
-      <p class="text-sm text-gray-700">${p.scentProfile}</p>
-      <span class="inline-block text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">
-        Best Seller
+      <h3 class="text-lg font-medium">${p.name}</h3>
+      <p class="text-sm text-white/60 mt-2">${p.scentProfile}</p>
+      <span class="inline-block mt-4 text-xs tracking-wide text-pink-500">
+        BEST SELLER
       </span>
     `;
 
@@ -67,3 +67,4 @@ PRODUCTS
 
 </body>
 </html>
+
