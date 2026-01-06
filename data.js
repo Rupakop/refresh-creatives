@@ -1,3 +1,14 @@
+
+export const SIZES = [
+  { ml: 10, price: 99, image: "images/10ml.jpg" },
+  { ml: 20, price: 199, image: "images/20ml.jpg" },
+  { ml: 30, price: 320, image: "images/30ml.jpg" },
+  { ml: 60, price: 499, image: "images/60ml.jpg" },
+  { ml: 100, price: 749, image: "images/100ml.jpg" }
+];
+
+
+
 export const PRODUCTS = [
   {
     id: 1,
