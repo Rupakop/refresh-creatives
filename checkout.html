@@ -1,184 +1,111 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-<meta charset="utf-8">
-<title>Checkout – Refresh Elixir</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<script src="https://cdn.tailwindcss.com"></script>
+  <title>Checkout – Refresh Elixir</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<body class="bg-black text-white">
 
-<body class="bg-neutral-950 text-white">
+<script>
+/* 🔧 CHANGE UPI ID ANYTIME HERE */
+const UPI_ID = "nipurna05-3@oksbi";
 
-<header class="max-w-4xl mx-auto px-6 py-6 flex justify-between">
-  <a href="index.html">← Back</a>
-  <h1 class="font-semibold">Checkout</h1>
-</header>
+/* 🔧 APPS SCRIPT WEB APP URL */
+const ORDER_API = "YOUR_APPS_SCRIPT_WEB_APP_URL";
+</script>
 
-<section class="max-w-4xl mx-auto px-6 py-10 space-y-8">
+<section class="max-w-xl mx-auto px-6 py-16">
+  <h1 class="text-3xl font-bold mb-6">Checkout</h1>
 
-  <!-- CART -->
-  <div class="bg-neutral-900 rounded-2xl p-6">
-    <h2 class="text-lg font-semibold mb-4">Your Cart</h2>
-    <div id="cartItems" class="space-y-3"></div>
-    <div class="flex justify-between mt-4 font-semibold">
-      <span>Total</span>
-      <span>₹<span id="total">0</span></span>
-    </div>
+  <div id="cartBox" class="mb-6"></div>
+  <p class="text-lg mb-4">Total: ₹<span id="total">0</span></p>
+
+  <input id="name" placeholder="Full Name"
+    class="w-full p-2 mb-3 bg-neutral-800 rounded">
+
+  <input id="phone" placeholder="Phone Number"
+    class="w-full p-2 mb-3 bg-neutral-800 rounded">
+
+  <input id="address" placeholder="Delivery Address"
+    class="w-full p-2 mb-4 bg-neutral-800 rounded">
+
+  <div class="text-sm text-white/70 mb-4">
+    Pay via UPI: <b id="upi"></b>
   </div>
 
-  <!-- DELIVERY DETAILS -->
-  <div class="bg-neutral-900 rounded-2xl p-6 space-y-4">
-    <h2 class="text-lg font-semibold">Delivery Details</h2>
-    <input id="name" placeholder="Full Name"
-      class="w-full bg-neutral-800 px-4 py-2 rounded">
-    <input id="phone" placeholder="Phone Number"
-      class="w-full bg-neutral-800 px-4 py-2 rounded">
-    <textarea id="address" placeholder="Full Address"
-      class="w-full bg-neutral-800 px-4 py-2 rounded"></textarea>
-  </div>
-
-  <!-- PAYMENT -->
-  <div class="bg-neutral-900 rounded-2xl p-6 space-y-4">
-    <h2 class="text-lg font-semibold">Payment</h2>
-
-    <button id="payUpi"
-      class="bg-blue-600 hover:bg-blue-700 w-full py-3 rounded-xl font-medium">
-      Pay via UPI
-    </button>
-
-    <!-- DESKTOP QR -->
-    <div id="qrBox" class="hidden text-center space-y-3 pt-4">
-      <p class="text-sm text-white/70">
-        Scan QR with your phone to pay
-      </p>
-      <img id="qrImg" class="mx-auto w-48 bg-white p-2 rounded">
-      <p class="text-xs text-white/40">
-        Payment will open in your UPI app
-      </p>
-    </div>
-  </div>
-
+  <button onclick="placeOrder()"
+    class="w-full bg-green-600 py-3 rounded hover:bg-green-700">
+    Place Order
+  </button>
 </section>
 
 <script>
-/* ================= CONFIG ================= */
-const SHEET_API_URL =
-  "https://script.google.com/macros/s/AKfycbyGdN9mSlUPGORra_oognMjha47hN8qne2c6qyfkGBLvuWjs5NM349NSiGTfV0BKgnCKQ/exec";
-
-const UPI_ID = "7977085466@kotak811";
-const MERCHANT = "Refresh Elixir";
-
-/* ================= CART ================= */
-let cart = JSON.parse(localStorage.getItem("cart") || "[]");
-const cartEl = document.getElementById("cartItems");
+const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+const cartBox = document.getElementById("cartBox");
 const totalEl = document.getElementById("total");
+document.getElementById("upi").innerText = UPI_ID;
+
+let total = 0;
 
 function renderCart() {
-  cartEl.innerHTML = "";
-  let total = 0;
-
-  if (!cart.length) {
-    cartEl.innerHTML = `<p class="text-white/60">Cart is empty</p>`;
-    totalEl.textContent = "0";
-    return;
-  }
+  cartBox.innerHTML = "";
+  total = 0;
 
   cart.forEach((item, i) => {
     total += item.price * item.qty;
-    cartEl.innerHTML += `
-      <div class="flex justify-between items-center bg-neutral-800 px-4 py-2 rounded">
-        <div>
-          <p class="font-medium">${item.name}</p>
-          <p class="text-xs text-white/60">${item.size} ml × ${item.qty}</p>
+
+    cartBox.innerHTML += `
+      <div class="border border-white/10 p-3 mb-2 rounded">
+        <div class="font-semibold">
+          ${item.name} (${item.ml}ml)
         </div>
-        <div class="flex items-center gap-2">
-          <button onclick="updateQty(${i},-1)">−</button>
-          <button onclick="updateQty(${i},1)">+</button>
-          <button onclick="removeItem(${i})" class="text-red-400">✕</button>
+        <div class="text-sm mt-1">
+          ₹${item.price} × ${item.qty}
+        </div>
+        <div class="mt-2 flex gap-2">
+          <button onclick="changeQty(${i},1)"
+            class="px-2 bg-neutral-700 rounded">+</button>
+          <button onclick="changeQty(${i},-1)"
+            class="px-2 bg-neutral-700 rounded">−</button>
         </div>
       </div>
     `;
   });
 
-  totalEl.textContent = total;
+  totalEl.innerText = total;
 }
 
-function updateQty(i, d) {
-  cart[i].qty += d;
-  if (cart[i].qty < 1) cart[i].qty = 1;
-  saveCart();
-}
-
-function removeItem(i) {
-  cart.splice(i, 1);
-  saveCart();
-}
-
-function saveCart() {
+function changeQty(index, diff) {
+  cart[index].qty += diff;
+  if (cart[index].qty <= 0) {
+    cart.splice(index, 1);
+  }
   localStorage.setItem("cart", JSON.stringify(cart));
   renderCart();
 }
 
-renderCart();
+async function placeOrder() {
+  if (!cart.length) return alert("Cart is empty");
 
-/* ================= PAYMENT ================= */
-document.getElementById("payUpi").onclick = async () => {
-  if (!cart.length) {
-    alert("Cart is empty");
-    return;
-  }
-
-  const name = document.getElementById("name").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const address = document.getElementById("address").value.trim();
-
-  if (!name || !phone || !address) {
-    alert("Please fill delivery details");
-    return;
-  }
-
-  const order = {
-    name,
-    phone,
-    address,
+  const payload = {
+    name: name.value,
+    phone: phone.value,
+    address: address.value,
     items: cart,
-    amount: Number(totalEl.textContent)
+    total: total,
+    status: "PENDING"
   };
 
-  try {
-    /* SAVE ORDER TO GOOGLE SHEETS */
-    const formData = new FormData();
-    formData.append("data", JSON.stringify(order));
+  await fetch(ORDER_API, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
 
-    const res = await fetch(SHEET_API_URL, {
-      method: "POST",
-      body: formData
-    });
+  localStorage.removeItem("cart");
+  alert("Order placed. Please pay via UPI and wait for confirmation SMS.");
+}
 
-    if (!res.ok) {
-      alert("Failed to save order. Try again.");
-      return;
-    }
-
-    /* OPEN PAYMENT */
-    const upiUrl =
-      `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(MERCHANT)}&am=${order.amount}&cu=INR`;
-
-    const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-
-    if (isMobile) {
-      window.location.href = upiUrl;
-    } else {
-      document.getElementById("qrImg").src =
-        `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiUrl)}`;
-      document.getElementById("qrBox").classList.remove("hidden");
-    }
-
-  } catch (err) {
-    console.error(err);
-    alert("Network error. Please try again.");
-  }
-};
+renderCart();
 </script>
 
 </body>
