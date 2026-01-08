@@ -9,40 +9,42 @@
 
 <body class="bg-black text-white">
 
-<!-- HEADER -->
-<header class="fixed top-0 left-0 right-0 bg-black/80 backdrop-blur z-50">
-  <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-    <h1 class="font-bold text-lg">Refresh Elixir</h1>
-    <a href="checkout.html"
-       id="cartBtn"
-       class="border px-4 py-2 rounded">
-      View Cart (<span id="cartCount">0</span>)
-    </a>
-  </div>
-</header>
-
-<div class="pt-24"></div>
-
 <!-- HERO -->
-<section class="min-h-[70vh] flex items-center bg-cover bg-center"
+<section class="min-h-[90vh] flex items-center bg-cover bg-center"
   style="background-image:url('images/hero.jpg')">
   <div class="max-w-6xl mx-auto px-6">
-    <h2 class="text-4xl md:text-6xl font-bold">
+    <h1 class="text-4xl md:text-6xl font-bold">
       Find Your Signature Scent
-    </h2>
+    </h1>
     <p class="mt-4 text-white/70">
       Premium inspired perfumes for everyday confidence
     </p>
-    <a href="products.html"
-       class="inline-block mt-8 bg-pink-600 px-6 py-3 rounded-full">
-      Explore Collection
-    </a>
+
+    <!-- ORIGINAL ENTRY POINTS (UNCHANGED) -->
+    <div class="mt-8 flex gap-4">
+      <a href="#best-sellers"
+        class="bg-pink-600 px-6 py-3 rounded-full font-medium">
+        Best Sellers
+      </a>
+
+      <a href="products.html"
+        class="border border-white/40 px-6 py-3 rounded-full">
+        Explore Collection
+      </a>
+
+      <!-- NEW: VIEW CART -->
+      <a href="checkout.html"
+        class="border border-white/40 px-6 py-3 rounded-full">
+        View Cart (<span id="cartCount">0</span>)
+      </a>
+    </div>
   </div>
 </section>
 
 <!-- BEST SELLERS -->
-<section class="max-w-6xl mx-auto px-6 py-16">
-  <h3 class="text-3xl font-bold mb-8">🔥 Best Sellers</h3>
+<section id="best-sellers" class="max-w-6xl mx-auto px-6 py-16">
+  <h2 class="text-3xl font-bold mb-8">🔥 Best Sellers</h2>
+
   <div id="bestSellerGrid"
     class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
   </div>
@@ -52,7 +54,7 @@
 import { PERFUMES } from "./perfumes.js";
 import { SIZES } from "./data.js";
 
-/* ===== CART UTILS ===== */
+/* ===== CART UTILS (NEW, NO UI CHANGE) ===== */
 function getCart() {
   return JSON.parse(localStorage.getItem("cart") || "[]");
 }
@@ -64,13 +66,11 @@ function updateCartCount() {
   document.getElementById("cartCount").textContent =
     getCart().reduce((s, i) => s + i.qty, 0);
 }
-
 function addToCart(product, size) {
   const cart = getCart();
   const found = cart.find(
     i => i.id === product.id && i.size === size.ml
   );
-
   if (found) found.qty++;
   else cart.push({
     id: product.id,
@@ -79,11 +79,10 @@ function addToCart(product, size) {
     price: size.price,
     qty: 1
   });
-
   setCart(cart);
 }
 
-/* ===== BEST SELLERS ===== */
+/* ===== BEST SELLERS (UNCHANGED DATA) ===== */
 const BEST_SELLER_IDS = [1,10,12,16,17,19,21,23,29,32,33,39];
 const grid = document.getElementById("bestSellerGrid");
 
@@ -97,7 +96,7 @@ BEST_SELLER_IDS
 
     card.innerHTML = `
       <img src="${size.image}" class="h-40 mx-auto mb-4">
-      <h4 class="font-semibold">${p.name}</h4>
+      <h3 class="font-semibold">${p.name}</h3>
       <p class="text-sm text-white/60">${p.scentProfile}</p>
 
       <select class="mt-3 w-full bg-black border p-2">
@@ -106,11 +105,12 @@ BEST_SELLER_IDS
         ).join("")}
       </select>
 
-      <div class="mt-4 grid grid-cols-2 gap-3">
-        <button class="addCart bg-neutral-800 py-2 rounded">
+      <!-- NEW BUTTONS (NO LAYOUT BREAK) -->
+      <div class="mt-4 flex gap-3">
+        <button class="addCart flex-1 border py-2 rounded">
           Add to Cart
         </button>
-        <button class="buyNow bg-pink-600 py-2 rounded">
+        <button class="buyNow flex-1 bg-pink-600 py-2 rounded">
           Buy Now
         </button>
       </div>
@@ -124,9 +124,8 @@ BEST_SELLER_IDS
       img.src = size.image;
     };
 
-    card.querySelector(".addCart").onclick = () => {
+    card.querySelector(".addCart").onclick = () =>
       addToCart(p, size);
-    };
 
     card.querySelector(".buyNow").onclick = () => {
       addToCart(p, size);
