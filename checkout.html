@@ -46,22 +46,32 @@
 
 <script>
 /* ================= CONFIG ================= */
-const UPI_ID = "nipurna05-3@oksbi"; // change anytime
+const UPI_ID = "nipurna05-3@oksbi";   // change anytime
 const MERCHANT_NAME = "Refresh Elixir";
 const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbwrbeDZjspqEvLYnpkBucAfGNvHpTdqwVCTzNg23JPY4dMnPSBzQ2Swc31rD9fR8yD0/exec";
 
-/* ================= SIZES ================= */
-const SIZES = {
-  10: 99,
-  20: 199,
-  30: 320,
-  60: 499,
-  100: 749
-};
+/* ================= CART (SANITIZED) ================= */
+let rawCart = JSON.parse(localStorage.getItem("cart") || "[]");
 
-/* ================= CART ================= */
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
+/* sanitize cart to avoid NaN */
+let cart = rawCart
+  .map(item => ({
+    id: item.id,
+    name: item.name,
+    size: Number(item.size),
+    price: Number(item.price),
+    qty: Number(item.qty)
+  }))
+  .filter(i =>
+    i.id &&
+    i.name &&
+    !isNaN(i.size) &&
+    !isNaN(i.price) &&
+    !isNaN(i.qty)
+  );
+
+localStorage.setItem("cart", JSON.stringify(cart));
 
 /* ================= RENDER CART ================= */
 function renderCart() {
@@ -70,9 +80,16 @@ function renderCart() {
 
   let total = 0;
 
+  if (cart.length === 0) {
+    container.innerHTML =
+      `<p class="text-center text-gray-400">Your cart is empty</p>`;
+    document.getElementById("totalAmount").textContent = "0";
+    return;
+  }
+
   cart.forEach((item, index) => {
-    const price = SIZES[item.size] * item.qty;
-    total += price;
+    const itemTotal = item.price * item.qty;
+    total += itemTotal;
 
     container.innerHTML += `
       <div class="bg-white/10 p-4 rounded flex justify-between items-center">
@@ -83,9 +100,11 @@ function renderCart() {
           </div>
         </div>
         <div class="text-right">
-          <div>₹${price}</div>
+          <div>₹${itemTotal}</div>
           <button onclick="removeItem(${index})"
-            class="text-xs text-red-400 mt-1">Remove</button>
+            class="text-xs text-red-400 mt-1">
+            Remove
+          </button>
         </div>
       </div>
     `;
@@ -118,11 +137,15 @@ document.getElementById("payBtn").onclick = async () => {
   }
 
   const amount = cart.reduce(
-    (sum, i) => sum + SIZES[i.size] * i.qty,
+    (sum, i) => sum + (i.price * i.qty),
     0
   );
 
-  // SAVE ORDER
+  if (isNaN(amount) || amount <= 0) {
+    alert("Invalid order amount");
+    return;
+  }
+
   const payload = {
     name,
     phone,
@@ -132,9 +155,8 @@ document.getElementById("payBtn").onclick = async () => {
     status: "PENDING"
   };
 
-  let res;
   try {
-    res = await fetch(APPS_SCRIPT_URL, {
+    await fetch(APPS_SCRIPT_URL, {
       method: "POST",
       body: JSON.stringify(payload)
     });
@@ -144,7 +166,6 @@ document.getElementById("payBtn").onclick = async () => {
   }
 
   const orderId = Date.now();
-
   payViaUPI(amount, orderId);
 };
 
@@ -153,7 +174,9 @@ function payViaUPI(amount, orderId) {
   const upiLink =
     `upi://pay?pa=${encodeURIComponent(UPI_ID)}` +
     `&pn=${encodeURIComponent(MERCHANT_NAME)}` +
-    `&am=${amount}&cu=INR&tn=${encodeURIComponent("Order " + orderId)}`;
+    `&am=${amount}` +
+    `&cu=INR` +
+    `&tn=${encodeURIComponent("Order " + orderId)}`;
 
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
