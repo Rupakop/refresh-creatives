@@ -9,370 +9,37 @@
 
 <header class="max-w-6xl mx-auto px-6 py-12">
   <h1 class="text-4xl font-bold">Explore Collection</h1>
-  <p class="text-white/60 mt-2">Find your signature scent</p>
+  <p class="text-white/60 mt-2">Search & filter perfumes by mood</p>
 
-  <!-- Search -->
   <input id="searchInput"
     placeholder="Search perfume..."
     class="mt-6 w-full md:w-1/2 p-2 bg-neutral-800 rounded">
 </header>
 
-<!-- Filters -->
 <section class="max-w-6xl mx-auto px-6 mb-8">
-  <div class="flex flex-wrap gap-3">
-    <button onclick="setCategory('all')" class="filter-btn">All</button>
-    <button onclick="setCategory('musk')" class="filter-btn">Musk</button>
-    <button onclick="setCategory('floral')" class="filter-btn">Floral</button>
-    <button onclick="setCategory('fresh')" class="filter-btn">Fresh</button>
-    <button onclick="setCategory('sweet')" class="filter-btn">Sweet</button>
-    <button onclick="setCategory('woody')" class="filter-btn">Woody</button>
-    <button onclick="setCategory('aquatic')" class="filter-btn">Aquatic</button>
-  </div>
+  <div id="filters" class="flex flex-wrap gap-3"></div>
 </section>
 
 <section class="max-w-6xl mx-auto px-6 pb-20">
   <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8"></div>
 </section>
 
-<style>
-.filter-btn {
-  padding: 6px 14px;
-  border: 1px solid rgba(255,255,255,.2);
-  border-radius: 999px;
-  font-size: 14px;
-}
-.filter-btn:hover { background:#ec4899 }
-</style>
-
 <script type="module">
 import { SIZES } from "./data.js";
+import { PERFUMES } from "./perfumes.js";
 
-/* PRODUCT DATA WITH CATEGORY + DESCRIPTION */
-const PRODUCTS = [
-  {
-    id: 1,
-    name: "Velvet Verse",
-    character: "Romantic, soft, elegant",
-    scentProfile: "Warm floral with powdery notes",
-    occasion: "Daily wear, evenings",
-    category: "Floral"
-  },
-  {
-    id: 2,
-    name: "Pure Snow Musk",
-    character: "Clean, calm, comforting",
-    scentProfile: "Soft white musk, airy and fresh",
-    occasion: "Daily wear",
-    category: "Musk"
-  },
-  {
-    id: 3,
-    name: "Midnight Dreamer",
-    character: "Smooth, dreamy, relaxing",
-    scentProfile: "Light sweetness with musky base",
-    occasion: "Night wear",
-    category: "Sweet"
-  },
-  {
-    id: 4,
-    name: "Soft Dove Mist",
-    character: "Clean, soothing, gentle",
-    scentProfile: "Creamy soap-like freshness",
-    occasion: "Everyday comfort",
-    category: "Fresh"
-  },
-  {
-    id: 5,
-    name: "Golden Talon",
-    character: "Bold, masculine, confident",
-    scentProfile: "Citrus opening with woody base",
-    occasion: "Office, outings",
-    category: "Woody"
-  },
-  {
-    id: 6,
-    name: "Midnight Charlie",
-    character: "Strong, spicy, charismatic",
-    scentProfile: "Warm spices with aromatic notes",
-    occasion: "Night wear",
-    category: "Spicy"
-  },
-  {
-    id: 7,
-    name: "Rider’s Edge",
-    character: "Rugged, adventurous",
-    scentProfile: "Leather, smoke, woods",
-    occasion: "Outdoor, night",
-    category: "Leather"
-  },
-  {
-    id: 8,
-    name: "Crystal Musk",
-    character: "Fresh, clean, soft",
-    scentProfile: "Light musky freshness with floral hints",
-    occasion: "Daily wear",
-    category: "Musk"
-  },
-  {
-    id: 9,
-    name: "Open Breeze",
-    character: "Free, airy, refreshing",
-    scentProfile: "Green herbal freshness",
-    occasion: "Daytime",
-    category: "Fresh"
-  },
-  {
-    id: 10,
-    name: "Brute Force",
-    character: "Classic, bold, masculine",
-    scentProfile: "Barbershop fougère with spice",
-    occasion: "Formal, evenings",
-    category: "Fougere"
-  },
-  {
-    id: 11,
-    name: "Snow Nevia",
-    character: "Soft, creamy, soothing",
-    scentProfile: "Powdery creamy freshness",
-    occasion: "Everyday comfort",
-    category: "Powdery"
-  },
-  {
-    id: 12,
-    name: "Royal Mirage Essence",
-    character: "Elegant, royal, refined",
-    scentProfile: "Powdery floral elegance",
-    occasion: "Special occasions",
-    category: "Floral"
-  },
-  {
-    id: 13,
-    name: "Solo Legend",
-    character: "Strong, confident, timeless",
-    scentProfile: "Woody aromatic blend",
-    occasion: "Evenings",
-    category: "Woody"
-  },
-  {
-    id: 14,
-    name: "Havoc Storm",
-    character: "Energetic, youthful",
-    scentProfile: "Fresh sweet aromatic notes",
-    occasion: "Daily wear",
-    category: "Fresh"
-  },
-  {
-    id: 15,
-    name: "Urban Hugo",
-    character: "Modern, green, sharp",
-    scentProfile: "Green fresh with light spice",
-    occasion: "Office, casual",
-    category: "Green"
-  },
-  {
-    id: 16,
-    name: "Sweet Aura",
-    character: "Gentle, romantic",
-    scentProfile: "Soft floral sweetness with musk",
-    occasion: "Daily wear",
-    category: "Floral"
-  },
-  {
-    id: 17,
-    name: "Mars Fire",
-    character: "Bold, fiery, powerful",
-    scentProfile: "Warm spicy masculine blend",
-    occasion: "Night wear",
-    category: "Spicy"
-  },
-  {
-    id: 18,
-    name: "Cobra Strike",
-    character: "Sharp, aggressive",
-    scentProfile: "Strong spicy punch",
-    occasion: "Evenings",
-    category: "Spicy"
-  },
-  {
-    id: 19,
-    name: "Inferno Wood",
-    character: "Dark, intense, masculine",
-    scentProfile: "Smoky leather with warm spice",
-    occasion: "Night wear",
-    category: "Leather"
-  },
-  {
-    id: 20,
-    name: "Ocean Attar Mist",
-    character: "Cool, breezy, refreshing",
-    scentProfile: "Salty aquatic freshness",
-    occasion: "Summer, daytime",
-    category: "Aquatic"
-  },
-  {
-    id: 21,
-    name: "Azure Seven",
-    character: "Clean, modern, airy",
-    scentProfile: "Fresh oceanic notes",
-    occasion: "Daily wear",
-    category: "Aquatic"
-  },
-  {
-    id: 22,
-    name: "Fresh Ponds Mist",
-    character: "Clean, comforting",
-    scentProfile: "Powdery creamy freshness",
-    occasion: "Everyday use",
-    category: "Powdery"
-  },
-  {
-    id: 23,
-    name: "Blue Velvet Lady",
-    character: "Soft, feminine",
-    scentProfile: "Floral fruity sweetness",
-    occasion: "Daily wear",
-    category: "Floral"
-  },
-  {
-    id: 24,
-    name: "Paso Legend",
-    character: "Warm, masculine",
-    scentProfile: "Woody spicy blend",
-    occasion: "Evenings",
-    category: "Woody"
-  },
-  {
-    id: 25,
-    name: "Kewda Bloom",
-    character: "Traditional, fresh",
-    scentProfile: "Sweet floral kewda",
-    occasion: "Festive, daily",
-    category: "Floral"
-  },
-  {
-    id: 26,
-    name: "Bold Belle",
-    character: "Sensual, confident",
-    scentProfile: "Sweet floral with cocoa",
-    occasion: "Parties, evenings",
-    category: "Sweet"
-  },
-  {
-    id: 27,
-    name: "Nice Breeze",
-    character: "Simple, pleasant",
-    scentProfile: "Fresh floral aquatic",
-    occasion: "Daily wear",
-    category: "Fresh"
-  },
-  {
-    id: 28,
-    name: "Lomani Noir",
-    character: "Classic, aromatic",
-    scentProfile: "Woody citrus aromatic",
-    occasion: "Evenings",
-    category: "Woody"
-  },
-  {
-    id: 29,
-    name: "Night Drakkar",
-    character: "Bold, vintage masculine",
-    scentProfile: "Herbal spicy fougère",
-    occasion: "Night wear",
-    category: "Fougere"
-  },
-  {
-    id: 30,
-    name: "Aqua Wave",
-    character: "Energetic, sporty",
-    scentProfile: "Mint, lavender, marine notes",
-    occasion: "Gym, daytime",
-    category: "Aquatic"
-  },
-  {
-    id: 31,
-    name: "Scarlet Charlie",
-    character: "Warm, seductive",
-    scentProfile: "Floral sweetness with spice",
-    occasion: "Evenings",
-    category: "Floral"
-  },
-  {
-    id: 32,
-    name: "Sport Breeze",
-    character: "Active, fresh",
-    scentProfile: "Clean sporty citrus",
-    occasion: "Daytime",
-    category: "Fresh"
-  },
-  {
-    id: 33,
-    name: "Blue Charge",
-    character: "Modern, vibrant",
-    scentProfile: "Fresh blue aromatic notes",
-    occasion: "Daily wear",
-    category: "Fresh"
-  },
-  {
-    id: 34,
-    name: "London Snow",
-    character: "Bright, classy",
-    scentProfile: "Citrus with soft musk",
-    occasion: "Daytime",
-    category: "Citrus"
-  },
-  {
-    id: 35,
-    name: "Ocean Drift",
-    character: "Relaxed, coastal",
-    scentProfile: "Fresh aquatic with mint",
-    occasion: "Casual wear",
-    category: "Aquatic"
-  },
-  {
-    id: 36,
-    name: "Aqua Royale",
-    character: "Luxurious, fresh",
-    scentProfile: "Clean aquatic with smooth base",
-    occasion: "Premium daily wear",
-    category: "Aquatic"
-  },
-  {
-    id: 37,
-    name: "Future Omen",
-    character: "Mysterious, modern",
-    scentProfile: "Woody aromatic blend",
-    occasion: "Night wear",
-    category: "Woody"
-  },
-  {
-    id: 38,
-    name: "Zatak Edge",
-    character: "Sharp, intense",
-    scentProfile: "Spicy woody punch",
-    occasion: "Evenings",
-    category: "Spicy"
-  },
-  {
-    id: 39,
-    name: "Azure Desire",
-    character: "Seductive, bold",
-    scentProfile: "Sweet aromatic freshness",
-    occasion: "Dates, night",
-    category: "Sweet"
-  },
-  {
-    id: 40,
-    name: "Flora Bloom",
-    character: "Elegant, graceful",
-    scentProfile: "White florals with soft sweetness",
-    occasion: "Day & evening",
-    category: "Floral"
-  }
-];
-];
+const grid = document.getElementById("grid");
+const filters = document.getElementById("filters");
+let activeCategory = "All";
 
-let currentCategory = "all";
+/* Build category filters */
+["All", ...new Set(PERFUMES.map(p => p.category))].forEach(cat => {
+  const btn = document.createElement("button");
+  btn.textContent = cat;
+  btn.className = "px-4 py-1 border rounded-full text-sm";
+  btn.onclick = () => { activeCategory = cat; render(); };
+  filters.appendChild(btn);
+});
 
 function addToCart(p, size) {
   const cart = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -384,36 +51,45 @@ function addToCart(p, size) {
 }
 
 function render() {
-  const grid = document.getElementById("grid");
-  const search = searchInput.value.toLowerCase();
-  grid.innerHTML="";
+  const q = searchInput.value.toLowerCase();
+  grid.innerHTML = "";
 
-  PRODUCTS.filter(p=>{
-    return (currentCategory==="all"||p.cat===currentCategory)
-      && p.name.toLowerCase().includes(search);
-  }).forEach(p=>{
-    let size=SIZES[0];
-    const card=document.createElement("div");
+  PERFUMES.filter(p => {
+    return (activeCategory==="All" || p.category===activeCategory) &&
+           p.name.toLowerCase().includes(q);
+  }).forEach(p => {
+    let size = SIZES[0];
+    const card = document.createElement("div");
     card.className="border border-white/10 p-5 rounded-xl";
-    card.innerHTML=`
+
+    card.innerHTML = `
       <img src="${size.image}" class="h-40 mx-auto mb-4">
       <h3 class="font-semibold">${p.name}</h3>
-      <p class="text-sm text-white/60 mt-1">${p.desc}</p>
-      <span class="text-xs inline-block mt-2 px-2 py-1 border rounded-full">${p.cat}</span>
+      <p class="text-sm text-white/60 mt-1">${p.scentProfile}</p>
+      <p class="text-xs text-white/50 mt-1">
+        <b>Character:</b> ${p.character}<br>
+        <b>Occasion:</b> ${p.occasion}
+      </p>
+      <span class="inline-block mt-2 px-2 py-1 text-xs border rounded-full">
+        ${p.category}
+      </span>
       <select class="mt-3 w-full bg-black border p-2">
         ${SIZES.map(s=>`<option value="${s.ml}">${s.ml}ml — ₹${s.price}</option>`).join("")}
       </select>
       <button class="mt-4 w-full bg-pink-600 py-2 rounded">Add to Cart</button>
     `;
-    const img=card.querySelector("img");
-    const sel=card.querySelector("select");
-    sel.onchange=()=>{size=SIZES.find(s=>s.ml==sel.value);img.src=size.image;}
-    card.querySelector("button").onclick=()=>addToCart(p,size);
+
+    const img = card.querySelector("img");
+    const sel = card.querySelector("select");
+    sel.onchange = () => {
+      size = SIZES.find(s=>s.ml==sel.value);
+      img.src = size.image;
+    };
+    card.querySelector("button").onclick = () => addToCart(p,size);
     grid.appendChild(card);
   });
 }
 
-window.setCategory = c => { currentCategory=c; render(); };
 searchInput.oninput = render;
 render();
 </script>
