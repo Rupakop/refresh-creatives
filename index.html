@@ -57,14 +57,13 @@
 <footer class="border-t border-white/10 py-8 text-center text-white/60">
   © Refresh Elixir
 </footer>
-
-<!-- ================= SCRIPT ================= -->
 <script type="module">
 import { PERFUMES } from "./perfumes.js";
 import { SIZES } from "./data.js";
 
-/* CHANGE IDS HERE IF NEEDED */
-const BEST_SELLER_IDS = [1, 2, 8, 20, 23, 30];
+const BEST_SELLER_IDS = [
+  1, 10, 12, 16, 17, 19, 21, 23, 29, 32, 33, 39
+];
 
 const grid = document.getElementById("bestSellerGrid");
 
@@ -75,22 +74,35 @@ BEST_SELLER_IDS
     let size = SIZES[0];
 
     const card = document.createElement("div");
-    card.className = "border border-white/10 p-5 rounded-xl";
+    card.className =
+      "border border-white/10 p-5 rounded-xl flex flex-col";
 
     card.innerHTML = `
       <img src="${size.image}" class="h-40 mx-auto mb-4">
-      <h3 class="font-semibold">${p.name}</h3>
-      <p class="text-sm text-white/60 mt-1">
+
+      <h3 class="font-semibold text-lg">${p.name}</h3>
+
+      <p class="text-sm text-white/70 mt-1">
         ${p.scentProfile}
       </p>
 
-      <select class="mt-4 w-full bg-black border p-2">
+      <p class="text-xs text-white/50 mt-2 leading-relaxed">
+        <b>Character:</b> ${p.character}<br>
+        <b>Occasion:</b> ${p.occasion}
+      </p>
+
+      <span class="inline-block mt-2 text-xs px-2 py-1 border rounded-full w-fit">
+        ${p.category}
+      </span>
+
+      <select class="mt-4 w-full bg-black border p-2 text-sm">
         ${SIZES.map(s =>
           `<option value="${s.ml}">${s.ml}ml — ₹${s.price}</option>`
         ).join("")}
       </select>
 
-      <button class="mt-4 w-full bg-pink-600 py-2 rounded hover:bg-pink-700">
+      <button
+        class="mt-4 w-full bg-pink-600 py-2 rounded hover:bg-pink-700">
         Buy Now
       </button>
     `;
@@ -125,6 +137,7 @@ BEST_SELLER_IDS
     grid.appendChild(card);
   });
 </script>
+
 
 </body>
 </html>
