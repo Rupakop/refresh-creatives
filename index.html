@@ -1,82 +1,130 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <title>Refresh Elixir</title>
+  <meta charset="utf-8">
+  <title>Refresh Elixir – Premium Inspired Perfumes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-black text-white">
 
-<!-- HERO -->
-<section class="relative min-h-screen flex items-center">
-  <img src="images/100ml.jpg"
-       class="absolute inset-0 w-full h-full object-cover object-center opacity-50">
-  <div class="absolute inset-0 bg-black/60"></div>
-
-  <div class="relative z-10 max-w-6xl mx-auto px-6">
-    <h1 class="text-6xl font-bold">Refresh Elixir</h1>
-    <p class="mt-4 text-white/80 text-lg">
-      Premium perfumes crafted for presence and memory.
+<!-- ================= HERO ================= -->
+<section
+  class="min-h-[90vh] flex items-center bg-cover bg-center"
+  style="background-image:url('images/hero.jpg')"
+>
+  <div class="max-w-6xl mx-auto px-6">
+    <h1 class="text-4xl md:text-6xl font-bold max-w-xl">
+      Find Your Signature Scent
+    </h1>
+    <p class="mt-4 text-white/70 max-w-lg">
+      Premium inspired perfumes crafted for everyday confidence.
     </p>
-    <a href="./products.html"
-       class="inline-block mt-8 bg-pink-600 px-7 py-3 rounded-full">
-      Explore Collection
-    </a>
+
+    <!-- Buttons -->
+    <div class="mt-8 flex flex-wrap gap-4">
+      <!-- Primary -->
+      <a href="#best-sellers"
+         class="bg-pink-600 hover:bg-pink-700 px-6 py-3 rounded-full font-medium">
+        Shop Best Sellers
+      </a>
+
+      <!-- Secondary -->
+      <a href="products.html"
+         class="border border-white/40 hover:bg-white/10 px-6 py-3 rounded-full font-medium">
+        Explore Collection
+      </a>
+    </div>
   </div>
 </section>
 
-<!-- BEST SELLERS -->
-<section class="max-w-6xl mx-auto px-6 py-20">
-  <h2 class="text-2xl mb-8">Best Sellers</h2>
-  <div id="grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+<!-- ================= BEST SELLERS ================= -->
+<section id="best-sellers" class="max-w-6xl mx-auto px-6 py-16">
+  <div class="flex justify-between items-center mb-8">
+    <h2 class="text-3xl font-bold">🔥 Best Sellers</h2>
+    <a href="products.html" class="text-pink-400 text-sm">
+      View all
+    </a>
+  </div>
+
+  <div id="bestSellerGrid"
+       class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+  </div>
 </section>
 
+<!-- ================= FOOTER ================= -->
+<footer class="border-t border-white/10 py-8 text-center text-white/60">
+  © Refresh Elixir
+</footer>
+
+<!-- ================= SCRIPT ================= -->
 <script type="module">
-import { PRODUCTS, SIZES } from "./data.js";
+import { PERFUMES } from "./perfumes.js";
+import { SIZES } from "./data.js";
 
-const BEST = [1,10,12,16,17,18,19,21,23,29,32,33,38,39];
-const grid = document.getElementById("grid");
+/* CHANGE IDS HERE IF NEEDED */
+const BEST_SELLER_IDS = [1, 2, 8, 20, 23, 30];
 
-function addToCart(p, size) {
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  const found = cart.find(i => i.id === p.id && i.ml === size.ml);
+const grid = document.getElementById("bestSellerGrid");
 
-  if (found) found.qty++;
-  else cart.push({ id:p.id, name:p.name, ml:size.ml, price:size.price, qty:1 });
+BEST_SELLER_IDS
+  .map(id => PERFUMES.find(p => p.id === id))
+  .filter(Boolean)
+  .forEach(p => {
+    let size = SIZES[0];
 
-  localStorage.setItem("cart", JSON.stringify(cart));
-  location.href = "checkout.html";
-}
+    const card = document.createElement("div");
+    card.className = "border border-white/10 p-5 rounded-xl";
 
-PRODUCTS.filter(p => BEST.includes(p.id)).forEach(p => {
-  let selectedSize = SIZES[0]; // 100ml DEFAULT
+    card.innerHTML = `
+      <img src="${size.image}" class="h-40 mx-auto mb-4">
+      <h3 class="font-semibold">${p.name}</h3>
+      <p class="text-sm text-white/60 mt-1">
+        ${p.scentProfile}
+      </p>
 
-  const card = document.createElement("div");
-  card.className = "border border-white/10 p-6 rounded";
+      <select class="mt-4 w-full bg-black border p-2">
+        ${SIZES.map(s =>
+          `<option value="${s.ml}">${s.ml}ml — ₹${s.price}</option>`
+        ).join("")}
+      </select>
 
-  card.innerHTML = `
-    <img src="${selectedSize.image}" class="h-40 mx-auto mb-4">
-    <h3>${p.name}</h3>
-    <select class="mt-2 w-full bg-black border p-2">
-      ${SIZES.map(s =>
-        `<option value="${s.ml}">${s.ml}ml — ₹${s.price}</option>`
-      ).join("")}
-    </select>
-    <button class="mt-4 w-full bg-pink-600 py-2 rounded">Buy Now</button>
-  `;
+      <button class="mt-4 w-full bg-pink-600 py-2 rounded hover:bg-pink-700">
+        Buy Now
+      </button>
+    `;
 
-  const img = card.querySelector("img");
-  const sel = card.querySelector("select");
+    const img = card.querySelector("img");
+    const sel = card.querySelector("select");
 
-  sel.onchange = () => {
-    selectedSize = SIZES.find(s => s.ml == sel.value);
-    img.src = selectedSize.image;
-  };
+    sel.onchange = () => {
+      size = SIZES.find(s => s.ml == sel.value);
+      img.src = size.image;
+    };
 
-  card.querySelector("button").onclick = () => addToCart(p, selectedSize);
-  grid.appendChild(card);
-});
+    card.querySelector("button").onclick = () => {
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+      const found = cart.find(
+        i => i.id === p.id && i.ml === size.ml
+      );
+
+      if (found) found.qty++;
+      else cart.push({
+        id: p.id,
+        name: p.name,
+        ml: size.ml,
+        price: size.price,
+        qty: 1
+      });
+
+      localStorage.setItem("cart", JSON.stringify(cart));
+      location.href = "checkout.html";
+    };
+
+    grid.appendChild(card);
+  });
 </script>
 
 </body>
 </html>
-
