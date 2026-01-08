@@ -1,64 +1,142 @@
 <!doctype html>
 <html>
 <head>
-  <title>Explore Collection</title>
+  <title>Explore Collection – Refresh Elixir</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white">
 
-<header class="text-center py-14">
+<header class="max-w-6xl mx-auto px-6 py-12">
   <h1 class="text-4xl font-bold">Explore Collection</h1>
+  <p class="text-white/60 mt-2">Find your signature scent</p>
+
+  <!-- Search -->
+  <input id="searchInput"
+    placeholder="Search perfume..."
+    class="mt-6 w-full md:w-1/2 p-2 bg-neutral-800 rounded">
 </header>
 
-<section class="max-w-6xl mx-auto px-6 pb-20">
-  <div id="grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+<!-- Filters -->
+<section class="max-w-6xl mx-auto px-6 mb-8">
+  <div class="flex flex-wrap gap-3">
+    <button onclick="setCategory('all')" class="filter-btn">All</button>
+    <button onclick="setCategory('musk')" class="filter-btn">Musk</button>
+    <button onclick="setCategory('floral')" class="filter-btn">Floral</button>
+    <button onclick="setCategory('fresh')" class="filter-btn">Fresh</button>
+    <button onclick="setCategory('sweet')" class="filter-btn">Sweet</button>
+    <button onclick="setCategory('woody')" class="filter-btn">Woody</button>
+    <button onclick="setCategory('aquatic')" class="filter-btn">Aquatic</button>
+  </div>
 </section>
 
-<script type="module">
-import { PRODUCTS, SIZES } from "./data.js";
+<section class="max-w-6xl mx-auto px-6 pb-20">
+  <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8"></div>
+</section>
 
-const grid = document.getElementById("grid");
+<style>
+.filter-btn {
+  padding: 6px 14px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 999px;
+  font-size: 14px;
+}
+.filter-btn:hover { background:#ec4899 }
+</style>
+
+<script type="module">
+import { SIZES } from "./data.js";
+
+/* PRODUCT DATA WITH CATEGORY + DESCRIPTION */
+const PRODUCTS = [
+  {id:1,name:"Velvet Verse",cat:"floral",desc:"Warm floral blend with soft powdery notes"},
+  {id:2,name:"Snow Musk",cat:"musk",desc:"Clean airy musk with long lasting softness"},
+  {id:3,name:"Midnight Dreamer",cat:"sweet",desc:"Smooth sweet scent with calming vibes"},
+  {id:4,name:"Soft Dove Mist",cat:"fresh",desc:"Creamy clean fragrance with comfort feel"},
+  {id:5,name:"Golden Heart",cat:"woody",desc:"Warm woody fragrance with bold depth"},
+  {id:6,name:"Midnight Charlie",cat:"woody",desc:"Spicy masculine scent with confidence"},
+  {id:7,name:"Rider’s Edge",cat:"woody",desc:"Rugged leather aroma for bold men"},
+  {id:8,name:"Crystal Musk",cat:"musk",desc:"Fresh musky aroma with floral touch"},
+  {id:9,name:"Open Breeze",cat:"fresh",desc:"Green herbal freshness"},
+  {id:10,name:"Brute Force",cat:"woody",desc:"Classic strong barbershop scent"},
+  {id:11,name:"Snow Nevia",cat:"fresh",desc:"Soft creamy freshness"},
+  {id:12,name:"Mirage Essence",cat:"floral",desc:"Elegant powdery floral fragrance"},
+  {id:13,name:"Solo Legend",cat:"woody",desc:"Strong aromatic woody scent"},
+  {id:14,name:"Havoc Storm",cat:"sweet",desc:"Mild sweet energetic fragrance"},
+  {id:15,name:"Urban Hugo",cat:"fresh",desc:"Green fresh modern scent"},
+  {id:16,name:"Sweet Aura",cat:"sweet",desc:"Soft floral sweetness"},
+  {id:17,name:"Mars Fire",cat:"woody",desc:"Spicy warm bold fragrance"},
+  {id:18,name:"Cobra Strike",cat:"woody",desc:"Sharp spicy masculine scent"},
+  {id:19,name:"Male Gaze",cat:"woody",desc:"Smoky bold masculine fragrance"},
+  {id:20,name:"Ocean Mist",cat:"aquatic",desc:"Fresh aquatic ocean scent"},
+  {id:21,name:"Seven Oceans",cat:"aquatic",desc:"Pure oceanic freshness"},
+  {id:22,name:"Fresh Mist",cat:"fresh",desc:"Clean powdery fragrance"},
+  {id:23,name:"Blue Velvet Lady",cat:"floral",desc:"Fruity floral feminine scent"},
+  {id:24,name:"Paso Legend",cat:"woody",desc:"Warm woody masculine scent"},
+  {id:25,name:"Kewda Bloom",cat:"floral",desc:"Traditional floral fragrance"},
+  {id:26,name:"Bold Belle",cat:"sweet",desc:"Sweet sensual floral"},
+  {id:27,name:"Sunshine",cat:"fresh",desc:"Bright cheerful freshness"},
+  {id:28,name:"Loman Shore",cat:"aquatic",desc:"Cool coastal freshness"},
+  {id:29,name:"Night Drakkar",cat:"woody",desc:"Herbal spicy masculine scent"},
+  {id:30,name:"Aqua Wave",cat:"aquatic",desc:"Fresh watery minty aroma"},
+  {id:31,name:"Scarlet Charlie",cat:"sweet",desc:"Warm spicy floral sweetness"},
+  {id:32,name:"Sport Breeze",cat:"fresh",desc:"Sporty citrus freshness"},
+  {id:33,name:"Blue Charge",cat:"fresh",desc:"Blue aromatic masculine scent"},
+  {id:34,name:"London Snow",cat:"fresh",desc:"Bright citrusy freshness"},
+  {id:35,name:"Ocean Drift",cat:"aquatic",desc:"Cool calm ocean breeze"},
+  {id:36,name:"Aqua Royale",cat:"aquatic",desc:"Premium aquatic fragrance"},
+  {id:37,name:"Future Omen",cat:"woody",desc:"Dark modern woody scent"},
+  {id:38,name:"Z Edge",cat:"woody",desc:"Sharp energetic masculine scent"},
+  {id:39,name:"Desire",cat:"sweet",desc:"Deep sensual sweetness"},
+  {id:40,name:"Flora Bloom",cat:"floral",desc:"Fresh blooming floral fragrance"}
+];
+
+let currentCategory = "all";
 
 function addToCart(p, size) {
   const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  const found = cart.find(i => i.id === p.id && i.ml === size.ml);
-
+  const found = cart.find(i => i.id===p.id && i.ml===size.ml);
   if (found) found.qty++;
-  else cart.push({ id:p.id, name:p.name, ml:size.ml, price:size.price, qty:1 });
-
+  else cart.push({id:p.id,name:p.name,ml:size.ml,price:size.price,qty:1});
   localStorage.setItem("cart", JSON.stringify(cart));
-  location.href = "checkout.html";
+  location.href="checkout.html";
 }
 
-PRODUCTS.forEach(p => {
-  let selectedSize = SIZES[0]; // 100ml DEFAULT
+function render() {
+  const grid = document.getElementById("grid");
+  const search = searchInput.value.toLowerCase();
+  grid.innerHTML="";
 
-  const card = document.createElement("div");
-  card.className = "border border-white/10 p-6 rounded";
+  PRODUCTS.filter(p=>{
+    return (currentCategory==="all"||p.cat===currentCategory)
+      && p.name.toLowerCase().includes(search);
+  }).forEach(p=>{
+    let size=SIZES[0];
+    const card=document.createElement("div");
+    card.className="border border-white/10 p-5 rounded-xl";
+    card.innerHTML=`
+      <img src="${size.image}" class="h-40 mx-auto mb-4">
+      <h3 class="font-semibold">${p.name}</h3>
+      <p class="text-sm text-white/60 mt-1">${p.desc}</p>
+      <span class="text-xs inline-block mt-2 px-2 py-1 border rounded-full">${p.cat}</span>
+      <select class="mt-3 w-full bg-black border p-2">
+        ${SIZES.map(s=>`<option value="${s.ml}">${s.ml}ml — ₹${s.price}</option>`).join("")}
+      </select>
+      <button class="mt-4 w-full bg-pink-600 py-2 rounded">Add to Cart</button>
+    `;
+    const img=card.querySelector("img");
+    const sel=card.querySelector("select");
+    sel.onchange=()=>{size=SIZES.find(s=>s.ml==sel.value);img.src=size.image;}
+    card.querySelector("button").onclick=()=>addToCart(p,size);
+    grid.appendChild(card);
+  });
+}
 
-  card.innerHTML = `
-    <img src="${selectedSize.image}" class="h-40 mx-auto mb-4">
-    <h3>${p.name}</h3>
-    <select class="mt-2 w-full bg-black border p-2">
-      ${SIZES.map(s =>
-        `<option value="${s.ml}">${s.ml}ml — ₹${s.price}</option>`
-      ).join("")}
-    </select>
-    <button class="mt-4 w-full bg-pink-600 py-2 rounded">Add to Cart</button>
-  `;
-
-  const img = card.querySelector("img");
-  const sel = card.querySelector("select");
-
-  sel.onchange = () => {
-    selectedSize = SIZES.find(s => s.ml == sel.value);
-    img.src = selectedSize.image;
-  };
-
-  card.querySelector("button").onclick = () => addToCart(p, selectedSize);
-  grid.appendChild(card);
-});
+window.setCategory = c => { currentCategory=c; render(); };
+searchInput.oninput = render;
+render();
 </script>
 
 </body>
 </html>
+
