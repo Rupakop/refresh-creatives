@@ -9,37 +9,67 @@
 
 <body class="bg-black text-white">
 
+
 <!-- HERO -->
-<section class="min-h-[90vh] flex items-center bg-cover bg-center"
-  style="background-image:url('images/hero.jpg')">
-  <div class="max-w-6xl mx-auto px-6">
-    <h1 class="text-4xl md:text-6xl font-bold">
-     Refresh Elixir
-    </h1>
-    <p class="mt-4 text-white/70">
-      Premium inspired perfumes for everyday confidence
-    </p>
+<section class="min-h-[90vh] flex items-center bg-black overflow-hidden">
+  <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
 
-    <!-- ORIGINAL ENTRY POINTS (UNCHANGED) -->
-    <div class="mt-8 flex gap-4">
-      <a href="#best-sellers"
-        class="bg-pink-600 px-6 py-3 rounded-full font-medium">
-        Best Sellers
-      </a>
+    <!-- LEFT: TEXT -->
+    <div>
+      <h1 class="text-4xl md:text-6xl font-bold">
+        Find Your Signature Scent
+      </h1>
+      <p class="mt-4 text-white/70">
+        Premium inspired perfumes for everyday confidence
+      </p>
 
-      <a href="products.html"
-        class="border border-white/40 px-6 py-3 rounded-full">
-        Explore Collection
-      </a>
+      <!-- ORIGINAL ENTRY POINTS (UNCHANGED) -->
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a href="#best-sellers"
+          class="bg-pink-600 px-6 py-3 rounded-full font-medium">
+          Best Sellers
+        </a>
 
-      <!-- NEW: VIEW CART -->
-      <a href="checkout.html"
-        class="border border-white/40 px-6 py-3 rounded-full">
-        View Cart (<span id="cartCount">0</span>)
-      </a>
+        <a href="products.html"
+          class="border border-white/40 px-6 py-3 rounded-full">
+          Explore Collection
+        </a>
+
+        <a href="checkout.html"
+          class="border border-white/40 px-6 py-3 rounded-full">
+          View Cart (<span id="cartCount">0</span>)
+        </a>
+      </div>
+    </div>
+
+    <!-- RIGHT: HERO IMAGES -->
+    <div class="relative flex items-center justify-center">
+
+      <!-- LEFT 10ml -->
+      <img
+        src="images/10ml.jpg"
+        alt="10ml Perfume"
+        class="absolute left-0 w-24 md:w-32 opacity-80 -rotate-6 hidden sm:block"
+      />
+
+      <!-- CENTER 100ml -->
+      <img
+        src="images/100ml.jpg"
+        alt="100ml Perfume"
+        class="w-48 md:w-64 z-10"
+      />
+
+      <!-- RIGHT 10ml -->
+      <img
+        src="images/10ml.jpg"
+        alt="10ml Perfume"
+        class="absolute right-0 w-24 md:w-32 opacity-80 rotate-6 hidden sm:block"
+      />
+
     </div>
   </div>
 </section>
+
 
 <!-- BEST SELLERS -->
 <section id="best-sellers" class="max-w-6xl mx-auto px-6 py-16">
