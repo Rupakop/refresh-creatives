@@ -1,161 +1,178 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <title>Checkout — Refresh Elixir</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <title>Checkout | Refresh Elixir</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-black text-white">
 
-<script>
-/* CHANGE THIS IF YOU WANT LATER */
-const UPI_ID = "nipurna05-3@oksbi";
-const MERCHANT_NAME = "Refresh Elixir";
+<body class="bg-black text-white min-h-screen">
 
-/* YOUR APPS SCRIPT URL */
-const ORDER_API = "https://script.google.com/macros/s/AKfycbwrbeDZjspqEvLYnpkBucAfGNvHpTdqwVCTzNg23JPY4dMnPSBzQ2Swc31rD9fR8yD0/exec";
-
-function buildUpiLink(amount) {
-  const am = parseFloat(amount).toFixed(2);
-  return `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${encodeURIComponent(am)}&cu=INR`;
-}
-</script>
-
-<section class="max-w-xl mx-auto px-6 py-16">
+<div class="max-w-4xl mx-auto p-6">
   <h1 class="text-3xl font-bold mb-6 text-center">Checkout</h1>
 
-  <div id="cartBox"></div>
+  <!-- CART -->
+  <div id="cartContainer" class="space-y-4"></div>
 
-  <p class="mt-4 text-lg">
-    Total: ₹<span id="totalAmount">0</span>
-  </p>
+  <!-- TOTAL -->
+  <div class="mt-6 flex justify-between text-lg font-semibold">
+    <span>Total</span>
+    <span>₹<span id="totalAmount">0</span></span>
+  </div>
 
-  <input id="custName"
-         placeholder="Full Name"
-         class="w-full p-2 mt-4 bg-neutral-800 rounded">
+  <!-- CUSTOMER DETAILS -->
+  <div class="mt-8 space-y-3">
+    <input id="custName" class="w-full p-2 rounded text-black" placeholder="Full Name" />
+    <input id="custPhone" class="w-full p-2 rounded text-black" placeholder="Phone Number" />
+    <input id="custAddress" class="w-full p-2 rounded text-black" placeholder="Full Address" />
+  </div>
 
-  <input id="custPhone"
-         placeholder="Phone Number"
-         class="w-full p-2 mt-3 bg-neutral-800 rounded">
-
-  <input id="custAddress"
-         placeholder="Delivery Address"
-         class="w-full p-2 mt-3 bg-neutral-800 rounded">
-
-  <button onclick="placeOrder()"
-          class="w-full mt-6 bg-green-600 py-3 rounded hover:bg-green-700">
-    Place Order
+  <!-- PAY BUTTON -->
+  <button id="payBtn"
+    class="mt-6 w-full bg-pink-600 hover:bg-pink-700 py-3 rounded text-lg font-bold">
+    Pay via UPI
   </button>
-</section>
+
+  <!-- DESKTOP QR -->
+  <div id="qrSection" class="hidden text-center mt-8">
+    <p class="text-gray-300 mb-2">Scan & pay using any UPI app</p>
+    <img id="upiQr" class="mx-auto w-64 h-64 bg-white p-3 rounded">
+    <p class="text-xs text-gray-400 mt-2">
+      After payment, do not close this page
+    </p>
+  </div>
+</div>
 
 <script>
-const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-const cartBox = document.getElementById("cartBox");
-const totalAmountEl = document.getElementById("totalAmount");
+/* ================= CONFIG ================= */
+const UPI_ID = "nipurna05-3@oksbi"; // change anytime
+const MERCHANT_NAME = "Refresh Elixir";
+const APPS_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbwrbeDZjspqEvLYnpkBucAfGNvHpTdqwVCTzNg23JPY4dMnPSBzQ2Swc31rD9fR8yD0/exec";
 
-let total = 0;
+/* ================= SIZES ================= */
+const SIZES = {
+  10: 99,
+  20: 199,
+  30: 320,
+  60: 499,
+  100: 749
+};
 
-/* RENDER CART */
+/* ================= CART ================= */
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+/* ================= RENDER CART ================= */
 function renderCart() {
-  cartBox.innerHTML = "";
-  total = 0;
+  const container = document.getElementById("cartContainer");
+  container.innerHTML = "";
 
-  if (!cart.length) {
-    cartBox.innerHTML = `
-      <p class="text-white/60 text-center">Your cart is empty.</p>
-    `;
-    totalAmountEl.textContent = "0";
-    return;
-  }
+  let total = 0;
 
   cart.forEach((item, index) => {
-    total += item.price * item.qty;
+    const price = SIZES[item.size] * item.qty;
+    total += price;
 
-    const div = document.createElement("div");
-    div.className = "border border-white/10 p-3 mb-3 rounded";
-
-    div.innerHTML = `
-      <div class="flex justify-between items-center">
+    container.innerHTML += `
+      <div class="bg-white/10 p-4 rounded flex justify-between items-center">
         <div>
-          <div class="font-semibold">${item.name} (${item.ml}ml)</div>
-          <div class="text-sm text-white/60">
-            ₹${item.price} × ${item.qty} = ₹${item.price * item.qty}
+          <div class="font-semibold">${item.name}</div>
+          <div class="text-sm text-gray-300">
+            ${item.size}ml × ${item.qty}
           </div>
         </div>
-        <button onclick="removeItem(${index})"
-                class="text-red-500 text-sm">
-          Remove
-        </button>
-      </div>
-      <div class="mt-2 flex gap-2">
-        <button onclick="changeQty(${index}, 1)"
-          class="px-3 bg-neutral-700 rounded">+</button>
-        <button onclick="changeQty(${index}, -1)"
-          class="px-3 bg-neutral-700 rounded">−</button>
+        <div class="text-right">
+          <div>₹${price}</div>
+          <button onclick="removeItem(${index})"
+            class="text-xs text-red-400 mt-1">Remove</button>
+        </div>
       </div>
     `;
-    cartBox.appendChild(div);
   });
 
-  totalAmountEl.textContent = total;
+  document.getElementById("totalAmount").textContent = total;
 }
 
-/* QUANTITY CHANGE */
-function changeQty(i, diff) {
-  cart[i].qty += diff;
-  if (cart[i].qty <= 0) {
-    cart.splice(i, 1);
-  }
+/* ================= REMOVE ITEM ================= */
+function removeItem(index) {
+  cart.splice(index, 1);
   localStorage.setItem("cart", JSON.stringify(cart));
   renderCart();
 }
 
-/* REMOVE ITEM */
-function removeItem(i) {
-  cart.splice(i, 1);
-  localStorage.setItem("cart", JSON.stringify(cart));
-  renderCart();
-}
-
-/* PLACE ORDER */
-async function placeOrder() {
+/* ================= PAY ================= */
+document.getElementById("payBtn").onclick = async () => {
   if (!cart.length) {
     alert("Cart is empty");
     return;
   }
-  if (!custName.value || !custPhone.value || !custAddress.value) {
-    alert("Please fill all fields");
+
+  const name = custName.value.trim();
+  const phone = custPhone.value.trim();
+  const address = custAddress.value.trim();
+
+  if (!name || !phone || !address) {
+    alert("Fill all details");
     return;
   }
 
+  const amount = cart.reduce(
+    (sum, i) => sum + SIZES[i.size] * i.qty,
+    0
+  );
+
+  // SAVE ORDER
   const payload = {
-    name: custName.value.trim(),
-    phone: custPhone.value.trim(),
-    address: custAddress.value.trim(),
+    name,
+    phone,
+    address,
     items: cart,
-    total: total,
+    amount,
     status: "PENDING"
   };
 
+  let res;
   try {
-    await fetch(ORDER_API, {
+    res = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
       body: JSON.stringify(payload)
     });
+  } catch {
+    alert("Network error");
+    return;
+  }
 
-    localStorage.removeItem("cart");
+  const orderId = Date.now();
 
-    /* REDIRECT TO GOOGLE PAY / UPI */
-    location.href = buildUpiLink(total);
+  payViaUPI(amount, orderId);
+};
 
-  } catch (err) {
-    console.error(err);
-    alert("Network error — try again.");
+/* ================= UPI HANDLER ================= */
+function payViaUPI(amount, orderId) {
+  const upiLink =
+    `upi://pay?pa=${encodeURIComponent(UPI_ID)}` +
+    `&pn=${encodeURIComponent(MERCHANT_NAME)}` +
+    `&am=${amount}&cu=INR&tn=${encodeURIComponent("Order " + orderId)}`;
+
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    window.location.href = upiLink;
+  } else {
+    const qrUrl =
+      "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
+      encodeURIComponent(upiLink);
+
+    document.getElementById("upiQr").src = qrUrl;
+    document.getElementById("qrSection").classList.remove("hidden");
   }
 }
 
+/* ================= INIT ================= */
 renderCart();
 </script>
 
 </body>
 </html>
+
