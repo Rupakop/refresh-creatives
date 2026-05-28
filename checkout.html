@@ -1,317 +1,66 @@
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-  <title>Checkout | Refresh Elixer</title>
-
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-</head>
-
-<body class="bg-black text-white min-h-screen">
-
-<div class="max-w-4xl mx-auto p-6">
-
-  <h1 class="text-3xl font-bold text-center mb-6">
-    Checkout
-  </h1>
-
-  <!-- CART -->
-  <div id="cartContainer" class="space-y-4"></div>
-
-  <!-- TOTAL -->
-  <div class="flex justify-between mt-6 text-lg font-semibold">
-    <span>Total</span>
-    <span>₹<span id="totalAmount">0</span></span>
-  </div>
-
-  <!-- CUSTOMER DETAILS -->
-  <div class="mt-8 space-y-3">
-
-    <input
-      id="custName"
-      type="text"
-      placeholder="Full Name"
-      class="w-full p-3 rounded text-black"
-    />
-
-    <input
-      id="custPhone"
-      type="text"
-      placeholder="Phone Number"
-      class="w-full p-3 rounded text-black"
-    />
-
-    <textarea
-      id="custAddress"
-      placeholder="Full Address"
-      class="w-full p-3 rounded text-black"
-    ></textarea>
-
-  </div>
-
-  <!-- BUTTON -->
-  <button
-    id="payBtn"
-    class="w-full mt-6 bg-pink-600 hover:bg-pink-700 py-3 rounded text-lg font-bold"
-  >
-    Pay Now
-  </button>
-
-</div>
-
+<button id="payBtn">Pay Now</button>
 <script>
+  const RAZORPAY_KEY_ID = "rzp_test_SuowFPYCk7AOQA"; // public key id (safe to expose)
+  const API_BASE = "/api"; // if same origin via Vercel/Express; otherwise full URL
 
-/* ================= CART ================= */
-
-let cart =
-  JSON.parse(localStorage.getItem("cart") || "[]");
-
-function renderCart() {
-
-  const container =
-    document.getElementById("cartContainer");
-
-  container.innerHTML = "";
-
-  let total = 0;
-
-  if (cart.length === 0) {
-
-    container.innerHTML = `
-      <p class="text-gray-400 text-center">
-        Cart is empty
-      </p>
-    `;
-
-    document.getElementById("totalAmount")
-      .textContent = "0";
-
-    return;
+  async function createOrder(amountPaise) {
+    const res = await fetch(`${API_BASE}/create-order`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: amountPaise, currency: "INR" })
+    });
+    return res.json(); // { orderId, amount, currency }
   }
 
-  cart.forEach((item, index) => {
-
-    const itemTotal =
-      Number(item.price) * Number(item.qty);
-
-    total += itemTotal;
-
-    container.innerHTML += `
-
-      <div class="bg-white/10 p-4 rounded flex justify-between items-center">
-
-        <div>
-
-          <h2 class="font-semibold">
-            ${item.name}
-          </h2>
-
-          <p class="text-sm text-gray-300">
-            ${item.size}ml × ${item.qty}
-          </p>
-
-        </div>
-
-        <div class="text-right">
-
-          <p>
-            ₹${itemTotal}
-          </p>
-
-          <button
-            onclick="removeItem(${index})"
-            class="text-red-400 text-xs mt-1"
-          >
-            Remove
-          </button>
-
-        </div>
-
-      </div>
-    `;
-  });
-
-  document.getElementById("totalAmount")
-    .textContent = total;
-}
-
-/* ================= REMOVE ITEM ================= */
-
-function removeItem(index) {
-
-  cart.splice(index, 1);
-
-  localStorage.setItem(
-    "cart",
-    JSON.stringify(cart)
-  );
-
-  renderCart();
-}
-
-/* ================= PAYMENT ================= */
-
-document.getElementById("payBtn")
-  .onclick = async function () {
-
-  if (cart.length === 0) {
-    alert("Cart is empty");
-    return;
+  async function verifyPayment(data) {
+    const res = await fetch(`${API_BASE}/verify-payment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    return res.json(); // { ok: true/false }
   }
 
-  const name =
-    document.getElementById("custName")
-      .value.trim();
+  document.getElementById("payBtn").addEventListener("click", async () => {
+    // Example: build amount from selected product in your page
+    // If you have price in rupees, multiply by 100:
+    const amountPaise = 59900; // ₹599.00 -> 59900
 
-  const phone =
-    document.getElementById("custPhone")
-      .value.trim();
-
-  const address =
-    document.getElementById("custAddress")
-      .value.trim();
-
-  if (!name || !phone || !address) {
-
-    alert("Fill all details");
-
-    return;
-  }
-
-  const amount = cart.reduce(
-    (sum, item) =>
-      sum +
-      (Number(item.price) * Number(item.qty)),
-    0
-  );
-
-  try {
-
-    /* CREATE ORDER */
-
-    const response = await fetch(
-      "/api/createOrder",
-      {
-
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify({
-          amount: amount
-        })
-      }
-    );
-
-    const order =
-      await response.json();
-
-    console.log(order);
-
-    if (!order.id) {
-
-      alert("Order creation failed");
-
-      return;
-    }
-
-    /* RAZORPAY */
+    const { orderId, amount, currency, error } = await createOrder(amountPaise);
+    if (error) { alert("Could not start payment"); return; }
 
     const options = {
-
-      key: "rzp_test_SuowFPYCk7AOQA",
-
-      amount: order.amount,
-
-      currency: order.currency,
-
+      key: RAZORPAY_KEY_ID,
+      amount: amount.toString(),
+      currency,
       name: "Refresh Elixer",
-
-      description: "Perfume Purchase",
-
-      order_id: order.id,
-
+      description: "Order Payment",
+      order_id: orderId,
+      theme: { color: "#3399cc" },
       handler: async function (response) {
-
-        const verifyResponse = await fetch(
-          "/api/verifyPayment",
-          {
-
-            method: "POST",
-
-            headers: {
-              "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-
-              razorpay_order_id:
-                response.razorpay_order_id,
-
-              razorpay_payment_id:
-                response.razorpay_payment_id,
-
-              razorpay_signature:
-                response.razorpay_signature
-            })
-          }
-        );
-
-        const data =
-          await verifyResponse.json();
-
-        if (data.success) {
-
-          alert("Payment Successful");
-
-          localStorage.removeItem("cart");
-
-          window.location.href =
-            "/index.html";
-
+        // response has: razorpay_payment_id, razorpay_order_id, razorpay_signature
+        const result = await verifyPayment(response);
+        if (result.ok) {
+          // Success — mark order paid, show thank-you, redirect, etc.
+          window.location.href = "/checkout.html?status=success";
         } else {
-
-          alert("Payment Verification Failed");
+          alert("Payment signature verification failed");
         }
       },
-
-      prefill: {
-        name: name,
-        contact: phone
+      modal: {
+        ondismiss: function () {
+          console.log("Checkout closed");
+        }
       },
-
-      theme: {
-        color: "#db2777"
+      prefill: {
+        name: "", email: "", contact: ""
+      },
+      notes: {
+        // optional: add cart or user notes
       }
     };
 
-    const razorpay =
-      new Razorpay(options);
-
-    razorpay.open();
-
-  } catch (error) {
-
-    console.log(error);
-
-    alert("Something went wrong");
-  }
-};
-
-/* ================= INIT ================= */
-
-renderCart();
-
+    const rzp = new Razorpay(options);
+    rzp.open();
+  });
 </script>
-
-</body>
-</html>
-```
