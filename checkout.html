@@ -1,16 +1,22 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Checkout | Refresh Elixir</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 
 <body class="bg-black text-white min-h-screen">
 
 <div class="max-w-4xl mx-auto p-6">
-  <h1 class="text-3xl font-bold mb-6 text-center">Checkout</h1>
+
+  <h1 class="text-3xl font-bold mb-6 text-center">
+    Checkout
+  </h1>
 
   <!-- CART -->
   <div id="cartContainer" class="space-y-4"></div>
@@ -23,38 +29,43 @@
 
   <!-- CUSTOMER DETAILS -->
   <div class="mt-8 space-y-3">
-    <input id="custName" class="w-full p-2 rounded text-black" placeholder="Full Name" />
-    <input id="custPhone" class="w-full p-2 rounded text-black" placeholder="Phone Number" />
-    <input id="custAddress" class="w-full p-2 rounded text-black" placeholder="Full Address" />
+
+    <input
+      id="custName"
+      class="w-full p-2 rounded text-black"
+      placeholder="Full Name"
+    />
+
+    <input
+      id="custPhone"
+      class="w-full p-2 rounded text-black"
+      placeholder="Phone Number"
+    />
+
+    <input
+      id="custAddress"
+      class="w-full p-2 rounded text-black"
+      placeholder="Full Address"
+    />
+
   </div>
 
   <!-- PAY BUTTON -->
-  <button id="payBtn"
-    class="mt-6 w-full bg-pink-600 hover:bg-pink-700 py-3 rounded text-lg font-bold">
-    Pay via UPI
+  <button
+    id="payBtn"
+    class="mt-6 w-full bg-pink-600 hover:bg-pink-700 py-3 rounded text-lg font-bold"
+  >
+    Pay Now
   </button>
 
-  <!-- DESKTOP QR -->
-  <div id="qrSection" class="hidden text-center mt-8">
-    <p class="text-gray-300 mb-2">Scan & pay using any UPI app</p>
-    <img id="upiQr" class="mx-auto w-64 h-64 bg-white p-3 rounded">
-    <p class="text-xs text-gray-400 mt-2">
-      After payment, do not close this page
-    </p>
-  </div>
 </div>
 
 <script>
-/* ================= CONFIG ================= */
-const UPI_ID = "7977085466@kotak811";   // change anytime
-const MERCHANT_NAME = "Refresh Elixir";
-const APPS_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbyT6G_8l7Jbze85B130djaLPker6lbkBttRR-XYPU-578O3pzwfLQTMpWDw2YXgErkZ/exec";
 
-/* ================= CART (SANITIZED) ================= */
+/* ================= CART ================= */
+
 let rawCart = JSON.parse(localStorage.getItem("cart") || "[]");
 
-/* sanitize cart to avoid NaN */
 let cart = rawCart
   .map(item => ({
     id: item.id,
@@ -74,62 +85,104 @@ let cart = rawCart
 localStorage.setItem("cart", JSON.stringify(cart));
 
 /* ================= RENDER CART ================= */
+
 function renderCart() {
-  const container = document.getElementById("cartContainer");
+
+  const container =
+    document.getElementById("cartContainer");
+
   container.innerHTML = "";
 
   let total = 0;
 
   if (cart.length === 0) {
+
     container.innerHTML =
-      `<p class="text-center text-gray-400">Your cart is empty</p>`;
-    document.getElementById("totalAmount").textContent = "0";
+      `<p class="text-center text-gray-400">
+        Your cart is empty
+      </p>`;
+
+    document.getElementById("totalAmount")
+      .textContent = "0";
+
     return;
   }
 
   cart.forEach((item, index) => {
+
     const itemTotal = item.price * item.qty;
+
     total += itemTotal;
 
     container.innerHTML += `
       <div class="bg-white/10 p-4 rounded flex justify-between items-center">
+
         <div>
-          <div class="font-semibold">${item.name}</div>
+          <div class="font-semibold">
+            ${item.name}
+          </div>
+
           <div class="text-sm text-gray-300">
             ${item.size}ml × ${item.qty}
           </div>
         </div>
+
         <div class="text-right">
+
           <div>₹${itemTotal}</div>
-          <button onclick="removeItem(${index})"
-            class="text-xs text-red-400 mt-1">
+
+          <button
+            onclick="removeItem(${index})"
+            class="text-xs text-red-400 mt-1"
+          >
             Remove
           </button>
+
         </div>
+
       </div>
     `;
   });
 
-  document.getElementById("totalAmount").textContent = total;
+  document.getElementById("totalAmount")
+    .textContent = total;
 }
 
 /* ================= REMOVE ITEM ================= */
+
 function removeItem(index) {
+
   cart.splice(index, 1);
-  localStorage.setItem("cart", JSON.stringify(cart));
+
+  localStorage.setItem(
+    "cart",
+    JSON.stringify(cart)
+  );
+
   renderCart();
 }
 
-/* ================= PAY ================= */
-document.getElementById("payBtn").onclick = async () => {
+/* ================= PAYMENT ================= */
+
+document.getElementById("payBtn").onclick =
+async function () {
+
   if (!cart.length) {
     alert("Cart is empty");
     return;
   }
 
-  const name = custName.value.trim();
-  const phone = custPhone.value.trim();
-  const address = custAddress.value.trim();
+  const name =
+    document.getElementById("custName")
+      .value.trim();
+
+  const phone =
+    document.getElementById("custPhone")
+      .value.trim();
+
+  const address =
+    document.getElementById("custAddress")
+      .value.trim();
 
   if (!name || !phone || !address) {
     alert("Fill all details");
@@ -137,65 +190,147 @@ document.getElementById("payBtn").onclick = async () => {
   }
 
   const amount = cart.reduce(
-    (sum, i) => sum + (i.price * i.qty),
+    (sum, item) =>
+      sum + (item.price * item.qty),
     0
   );
 
-  if (isNaN(amount) || amount <= 0) {
-    alert("Invalid order amount");
+  if (amount <= 0 || isNaN(amount)) {
+    alert("Invalid amount");
     return;
   }
-
-  const payload = {
-    name,
-    phone,
-    address,
-    items: cart,
-    amount,
-    status: "PENDING"
-  };
 
   try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-  } catch {
-    alert("Network error");
-    return;
-  }
 
-  const orderId = Date.now();
-  payViaUPI(amount, orderId);
+    /* CREATE ORDER */
+
+    const orderResponse = await fetch(
+      "/api/createOrder",
+      {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          amount: amount,
+        }),
+      }
+    );
+
+    const order = await orderResponse.json();
+
+    /* RAZORPAY OPTIONS */
+
+    const options = {
+
+      key: "rzp_test_SuowFPYCk7AOQA",
+
+      amount: order.amount,
+
+      currency: order.currency,
+
+      name: "Refresh Elixir",
+
+      description: "Perfume Order",
+
+      order_id: order.id,
+
+      handler: async function (response) {
+
+        /* VERIFY PAYMENT */
+
+        const verifyResponse = await fetch(
+          "/api/verifyPayment",
+          {
+
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify({
+
+              razorpay_order_id:
+                response.razorpay_order_id,
+
+              razorpay_payment_id:
+                response.razorpay_payment_id,
+
+              razorpay_signature:
+                response.razorpay_signature,
+
+              customer: {
+                name,
+                phone,
+                address,
+              },
+
+              items: cart,
+
+              amount: amount,
+            }),
+          }
+        );
+
+        const data =
+          await verifyResponse.json();
+
+        if (data.success) {
+
+          alert("Payment Successful!");
+
+          localStorage.removeItem("cart");
+
+          window.location.href =
+            "/index.html";
+
+        } else {
+
+          alert("Payment Verification Failed");
+        }
+      },
+
+      prefill: {
+        name: name,
+        contact: phone,
+      },
+
+      theme: {
+        color: "#db2777",
+      },
+    };
+
+    const razorpay =
+      new Razorpay(options);
+
+    razorpay.on(
+      "payment.failed",
+      function () {
+
+        alert("Payment Failed");
+      }
+    );
+
+    razorpay.open();
+
+  } catch (error) {
+
+    console.log(error);
+
+    alert("Something went wrong");
+  }
 };
 
-/* ================= UPI HANDLER ================= */
-function payViaUPI(amount, orderId) {
-  const upiLink =
-    `upi://pay?pa=${encodeURIComponent(UPI_ID)}` +
-    `&pn=${encodeURIComponent(MERCHANT_NAME)}` +
-    `&am=${amount}` +
-    `&cu=INR` +
-    `&tn=${encodeURIComponent("Order " + orderId)}`;
-
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-  if (isMobile) {
-    window.location.href = upiLink;
-  } else {
-    const qrUrl =
-      "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
-      encodeURIComponent(upiLink);
-
-    document.getElementById("upiQr").src = qrUrl;
-    document.getElementById("qrSection").classList.remove("hidden");
-  }
-}
-
 /* ================= INIT ================= */
+
 renderCart();
+
 </script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 </body>
 </html>
-
+```
