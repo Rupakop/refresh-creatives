@@ -26,8 +26,6 @@ module.exports = async (req, res) => {
 
     if (isAuthentic) {
 
-      // SAVE ORDER TO DB HERE
-
       return res.status(200).json({
         success: true,
       });
@@ -43,7 +41,7 @@ module.exports = async (req, res) => {
 
     console.log(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
     });
   }
