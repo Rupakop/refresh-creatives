@@ -8,7 +8,9 @@ const razorpay = new Razorpay({
 module.exports = async (req, res) => {
 
   if (req.method !== "POST") {
-    return res.status(405).send("Method not allowed");
+    return res.status(405).json({
+      message: "Method not allowed",
+    });
   }
 
   try {
@@ -21,14 +23,15 @@ module.exports = async (req, res) => {
 
     const order = await razorpay.orders.create(options);
 
-    res.status(200).json(order);
+    return res.status(200).json(order);
 
   } catch (error) {
 
-    console.error(error);
+    console.log(error);
 
-    res.status(500).json({
-      error: "Order creation failed",
+    return res.status(500).json({
+      success: false,
+      message: "Order creation failed",
     });
   }
 };
