@@ -1,3 +1,5 @@
+console.log("Create Order API Loaded");
+console.log("KEY:", process.env.RAZORPAY_KEY_ID);
 const Razorpay = require("razorpay");
 
 module.exports = async (req, res) => {
